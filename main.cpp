@@ -20,25 +20,21 @@ namespace kiwi {
   static std::string default_shader_vert =
       "#version 330 core\n"
       "layout (location = 0) in vec3 a_position;\n"
-      "layout (location = 1) in vec2 a_texcoord;\n"
-      "out vec2 text_coord;\n"
-      "uniform mat4 model;\n"
-      "uniform mat4 view;\n"
-      "uniform mat4 projection;\n"
+      "uniform mat4 u_model;\n"
+      "uniform mat4 u_view;\n"
+      "uniform mat4 u_projection;\n"
       "void main() {\n"
-      "  gl_Position = projection * view * model * vec4(a_position, 1.0f);\n"
-      "  text_coord = a_texcoord;\n"
+      "  gl_Position = u_projection * u_view * u_model * vec4(a_position, 1.0f);\n"
       "}\n";
 
   static std::string default_shader_frag =
       "#version 330 core\n"
       "in vec2 textcoord;\n"
-      "out vec4 FragColor;\n"
-      "uniform sampler2D tex;\n"
-      "uniform float current_time;\n"
+      "out vec4 frag_color;\n"
+      "uniform float u_time;\n"
       "void main() {\n"
-      "  float blue = (sin(current_time) + 1.0) * 0.5;\n"
-      "  FragColor = vec4(1.0, 0.5, blue, 1.0);\n"
+      "  float blue = (sin(u_time) + 1.0) * 0.5;\n"
+      "  frag_color = vec4(1.0, 0.5, blue, 1.0);\n"
       "}\n";
 
   static uint32_t compile_shader(int shader_type, const std::string& source)
@@ -191,7 +187,7 @@ int main(int argc, char* argv[])
   // Needed before setting uniforms
   glUseProgram(shader_program);
 
-  glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection"), 1, GL_FALSE, glm::value_ptr(proj));
+  glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_projection"), 1, GL_FALSE, glm::value_ptr(proj));
 
   static auto cursor_position_callback = [](GLFWwindow* window, double x_pos, double y_pos) {
     // Do something with the mouse position while RMB is pressed
@@ -244,7 +240,7 @@ int main(int argc, char* argv[])
     glm::mat4 cam_translation = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 5.0f));
     glm::mat4 cam_transform = cam_translation * cam_rotation;
     glm::mat4 view = glm::inverse(cam_transform);
-    glUniformMatrix4fv(glGetUniformLocation(shader_program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_view"), 1, GL_FALSE, glm::value_ptr(view));
 
     static float bg_color_red = 0.411f;
     static float bg_color_green = 0.469f;
@@ -257,17 +253,17 @@ int main(int argc, char* argv[])
     glUseProgram(shader_program);
     glBindVertexArray(vao);
 
-    glUniform1f(glGetUniformLocation(shader_program, "current_time"), (float)current_time);
+    glUniform1f(glGetUniformLocation(shader_program, "u_time"), (float)current_time);
 
     const auto Y = (float)glm::sin(current_time);
     auto new_transform = glm::translate(transform, glm::vec3(-1.f, Y, 0.f));
-    glUniformMatrix4fv(glGetUniformLocation(shader_program, "model"), 1, GL_FALSE, glm::value_ptr(new_transform));
+    glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_model"), 1, GL_FALSE, glm::value_ptr(new_transform));
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
 
     new_transform = glm::translate(transform, glm::vec3(1.f, -Y, 0.f));
-    glUniformMatrix4fv(glGetUniformLocation(shader_program, "model"), 1, GL_FALSE, glm::value_ptr(new_transform));
+    glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_model"), 1, GL_FALSE, glm::value_ptr(new_transform));
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
