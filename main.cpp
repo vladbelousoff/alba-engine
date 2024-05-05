@@ -5,17 +5,17 @@
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_glfw.h>
 
-#include <iostream>
+#include <spdlog/spdlog.h>
 
 namespace kiwi {
-    static void ErrorCallstack(int error, const char *description) {
-        std::cerr << "Error: " << error << " " << description << std::endl;
+    static void handle_glfw_error(int error, const char *description) {
+        spdlog::error("Code: {}, description: {}", error, description);
     }
 }
 
 int main() {
     if (!glfwInit()) {
-        std::cerr << "Failed to initialize GLFW" << std::endl;
+        spdlog::error("Failed to initialize GLFW");
         return -1;
     }
 
@@ -25,12 +25,12 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Set error callback
-    glfwSetErrorCallback(kiwi::ErrorCallstack);
+    glfwSetErrorCallback(kiwi::handle_glfw_error);
 
     // Create a windowed mode window and its OpenGL context
-    GLFWwindow *window = glfwCreateWindow(1280, 720, "Terrain Generator", nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(1920, 1080, "Kiwi Engine", nullptr, nullptr);
     if (!window) {
-        std::cerr << "Failed to create GLFW window" << std::endl;
+        spdlog::error("Failed to create GLFW window");
         glfwTerminate();
         return -1;
     }
@@ -45,26 +45,29 @@ int main() {
     IMGUI_CHECKVERSION();
 
     ImGui::CreateContext();
-    ImGuiIO &IO = ImGui::GetIO();
-    IO.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    IO.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    ImGuiIO &io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-    constexpr const char *GLSLVersion = "#version 330";
-    ImGui_ImplOpenGL3_Init(GLSLVersion);
+    constexpr const char *glsl_version = "#version 330";
+    ImGui_ImplOpenGL3_Init(glsl_version);
 
     if (glewInit()) {
+        spdlog::error("Failed to initialize glew");
         return -1;
     }
+
+    spdlog::info("Starting...");
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
-        static float backgroundRed = 0.411f;
-        static float backgroundGreen = 0.469f;
-        static float backgroundBlue = 0.588f;
+        static float bg_color_red = 0.411f;
+        static float bg_color_green = 0.469f;
+        static float bg_color_blue = 0.588f;
 
-        glClearColor(backgroundRed, backgroundGreen, backgroundBlue, 1.0f);
+        glClearColor(bg_color_red, bg_color_green, bg_color_blue, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glCullFace(GL_BACK);
 
@@ -75,13 +78,14 @@ int main() {
 
         ImGui::Begin("Settings");
         ImGui::Text("Background Color");
-        ImGui::SliderFloat("Red", &backgroundRed, 0.0f, 1.0f);
-        ImGui::SliderFloat("Green", &backgroundGreen, 0.0f, 1.0f);
-        ImGui::SliderFloat("Blue", &backgroundBlue, 0.0f, 1.0f);
+        ImGui::SliderFloat("Red", &bg_color_red, 0.0f, 1.0f);
+        ImGui::SliderFloat("Green", &bg_color_green, 0.0f, 1.0f);
+        ImGui::SliderFloat("Blue", &bg_color_blue, 0.0f, 1.0f);
         ImGui::End();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         glfwSwapBuffers(window);
     }
 
