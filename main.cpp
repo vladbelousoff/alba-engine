@@ -209,46 +209,12 @@ int main(int argc, char* argv[])
   glAttachShader(shader_program, vert_shader);
   glLinkProgram(shader_program);
 
-  float cam_pitch = 0.0f;
-  float cam_yaw = 0.0f;
-  float rot_scale = 0.01f;
-
-  double prev_mouse_x = 0;
-  double prev_mouse_y = 0;
-
-  static double mouse_x = 0;
-  static double mouse_y = 0;
-
   glm::mat4 proj = glm::perspective(glm::radians(45.0f), 1920.f / 1080.f, 0.1f, 100.0f);
 
   // Needed before setting uniforms
   glUseProgram(shader_program);
 
   glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_projection"), 1, GL_FALSE, glm::value_ptr(proj));
-
-  static auto cursor_position_callback = [](GLFWwindow* window, double x_pos, double y_pos) {
-    // Do something with the mouse position while RMB is pressed
-    // Example: Print the position to the console
-    spdlog::info("Mouse position: {}:{}", x_pos, y_pos);
-    mouse_x = x_pos;
-    mouse_y = y_pos;
-  };
-
-  static auto mouse_button_callback = [](GLFWwindow* window, int button, int action, int mods) {
-    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-      // Right mouse button pressed, start tracking mouse movement
-      glfwSetCursorPosCallback(window, cursor_position_callback);
-    } else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
-      // Right mouse button released, stop tracking mouse movement
-      glfwSetCursorPosCallback(window, nullptr);
-    }
-  };
-
-  // Set up mouse button callback
-  // glfwSetMouseButtonCallback(window, mouse_button_callback);
-
-  // Set up cursor position callback
-  // glfwSetCursorPosCallback(window, cursor_position_callback);
 
   // Define orbit camera parameters
   float camera_radius = -5.0f;
@@ -267,24 +233,6 @@ int main(int argc, char* argv[])
 
     glfwPollEvents();
 
-    {
-      if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {
-        double delta_x = mouse_x - prev_mouse_x;
-        double delta_y = mouse_y - prev_mouse_y;
-        cam_yaw += float(-delta_x) * rot_scale;
-        cam_pitch += float(-delta_y) * rot_scale;
-      }
-
-      prev_mouse_x = mouse_x;
-      prev_mouse_y = mouse_y;
-    }
-
-    // glm::mat4 cam_rotation = glm::rotate(glm::mat4(1.0f), cam_pitch, glm::vec3(1.0f, 0.0f, 0.0f)) * glm::rotate(glm::mat4(1.0f), cam_yaw, glm::vec3(0.0f, 1.0f, 0.0f));
-    // glm::mat4 cam_translation = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 5.0f));
-    // glm::mat4 cam_transform = cam_translation * cam_rotation;
-    // glm::mat4 view = glm::inverse(cam_transform);
-    // glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_view"), 1, GL_FALSE, glm::value_ptr(view));
-
     glm::vec3 camera_position;
     camera_position.x = target_position.x + camera_radius * cos(camera_theta) * sin(camera_phi);
     camera_position.y = target_position.z + camera_radius * sin(camera_theta) * sin(camera_phi);
@@ -296,9 +244,9 @@ int main(int argc, char* argv[])
     // Update uniform
     glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_view"), 1, GL_FALSE, glm::value_ptr(view));
 
-    static float bg_color_red = 0.411f;
-    static float bg_color_green = 0.469f;
-    static float bg_color_blue = 0.588f;
+    static float bg_color_red = 0.144f;
+    static float bg_color_green = 0.186f;
+    static float bg_color_blue = 0.311f;
 
     glClearColor(bg_color_red, bg_color_green, bg_color_blue, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
