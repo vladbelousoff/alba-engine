@@ -62,24 +62,58 @@ namespace kiwi {
     return shader_id;
   }
 
-  GLfloat vertices[] = { -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, -0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, -0.5f, 0.5f,
-    -0.5f };
-
-  GLuint indices[] = {
-    // front face
-    0, 1, 2, 2, 3, 0,
-    // top face
-    3, 2, 6, 6, 7, 3,
-    // back face
-    7, 6, 5, 5, 4, 7,
-    // left face
-    4, 0, 3, 3, 7, 4,
-    // bottom face
-    // Back to front now
-    0, 4, 5, 5, 1, 0,
-    // right face
-    1, 5, 6, 6, 2, 1
+  struct Vertex
+  {
+    float x, y, z;
   };
+
+  std::vector<Vertex> generate_grid_vertices(float size, int n)
+  {
+    std::vector<Vertex> grid_vertices;
+
+    // Calculate the step size between each grid cell
+    float step = size / (float)n;
+
+    // Generate vertices
+    for (int i = 0; i <= n; ++i) {
+      for (int j = 0; j <= n; ++j) {
+        Vertex v{};
+        v.x = -size / 2.0f + (float)j * step;
+        v.y = -size / 2.0f + (float)i * step;
+        v.z = 0.0f;
+        grid_vertices.push_back(v);
+      }
+    }
+
+    return grid_vertices;
+  }
+
+  std::vector<GLuint> generate_grid_indices(int n)
+  {
+    std::vector<GLuint> grid_indices;
+
+    // Generate indices for each quad
+    for (int i = 0; i < n; ++i) {
+      for (int j = 0; j < n; ++j) {
+        GLuint top_left = i * (n + 1) + j;
+        GLuint top_right = top_left + 1;
+        GLuint bottom_left = (i + 1) * (n + 1) + j;
+        GLuint bottom_right = bottom_left + 1;
+
+        // First triangle of the quad
+        grid_indices.push_back(top_left);
+        grid_indices.push_back(bottom_left);
+        grid_indices.push_back(top_right);
+
+        // Second triangle of the quad
+        grid_indices.push_back(top_right);
+        grid_indices.push_back(bottom_left);
+        grid_indices.push_back(bottom_right);
+      }
+    }
+
+    return grid_indices;
+  }
 } // namespace kiwi
 
 int main(int argc, char* argv[])
@@ -144,16 +178,19 @@ int main(int argc, char* argv[])
   // Bind VAO
   glBindVertexArray(vao);
 
+  std::vector<kiwi::Vertex> vertices = kiwi::generate_grid_vertices(1.f, 32);
+  std::vector<GLuint> indices = kiwi::generate_grid_indices(32);
+
   // Bind VBO and copy vertices data
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(kiwi::vertices), kiwi::vertices, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(vertices.size() * sizeof(kiwi::Vertex)), vertices.data(), GL_STATIC_DRAW);
 
   // Bind EBO and copy indices data
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(kiwi::indices), kiwi::indices, GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)(indices.size() * sizeof(GLuint)), indices.data(), GL_STATIC_DRAW);
 
   // Set vertex attribute pointers
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)nullptr);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(kiwi::Vertex), (GLvoid*)nullptr);
   glEnableVertexAttribArray(0);
 
   // Unbind VAO, VBO, and EBO
@@ -213,6 +250,12 @@ int main(int argc, char* argv[])
   // Set up cursor position callback
   // glfwSetCursorPosCallback(window, cursor_position_callback);
 
+  // Define orbit camera parameters
+  float camera_radius = -5.0f;
+  float camera_theta = 0.0f;                   // Horizontal angle around the target point
+  float camera_phi = 0.0f;                     // Vertical angle around the target point
+  glm::vec3 target_position(0.0f, 0.0f, 0.0f); // Assuming the target is at the origin
+
   auto transform = glm::mat4(1.0f);
   auto last_time = glfwGetTime();
 
@@ -236,10 +279,21 @@ int main(int argc, char* argv[])
       prev_mouse_y = mouse_y;
     }
 
-    glm::mat4 cam_rotation = glm::rotate(glm::mat4(1.0f), cam_pitch, glm::vec3(1.0f, 0.0f, 0.0f)) * glm::rotate(glm::mat4(1.0f), cam_yaw, glm::vec3(0.0f, 1.0f, 0.0f));
-    glm::mat4 cam_translation = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 5.0f));
-    glm::mat4 cam_transform = cam_translation * cam_rotation;
-    glm::mat4 view = glm::inverse(cam_transform);
+    // glm::mat4 cam_rotation = glm::rotate(glm::mat4(1.0f), cam_pitch, glm::vec3(1.0f, 0.0f, 0.0f)) * glm::rotate(glm::mat4(1.0f), cam_yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+    // glm::mat4 cam_translation = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 5.0f));
+    // glm::mat4 cam_transform = cam_translation * cam_rotation;
+    // glm::mat4 view = glm::inverse(cam_transform);
+    // glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_view"), 1, GL_FALSE, glm::value_ptr(view));
+
+    glm::vec3 camera_position;
+    camera_position.x = target_position.x + camera_radius * cos(camera_theta) * sin(camera_phi);
+    camera_position.y = target_position.z + camera_radius * sin(camera_theta) * sin(camera_phi);
+    camera_position.z = target_position.y + camera_radius * cos(camera_phi);
+
+    // Calculate view matrix
+    glm::mat4 view = glm::lookAt(camera_position, target_position, glm::vec3(0.0f, 1.0f, 0.0f));
+
+    // Update uniform
     glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_view"), 1, GL_FALSE, glm::value_ptr(view));
 
     static float bg_color_red = 0.411f;
@@ -255,18 +309,18 @@ int main(int argc, char* argv[])
 
     glUniform1f(glGetUniformLocation(shader_program, "u_time"), (float)current_time);
 
-    const auto Y = (float)glm::sin(current_time);
-    auto new_transform = glm::translate(transform, glm::vec3(-1.f, Y, 0.f));
+    const auto y = (float)glm::sin(current_time);
+    auto new_transform = glm::translate(transform, glm::vec3(-1.f, y, 0.f));
     glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_model"), 1, GL_FALSE, glm::value_ptr(new_transform));
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, nullptr);
 
-    new_transform = glm::translate(transform, glm::vec3(1.f, -Y, 0.f));
+    new_transform = glm::translate(transform, glm::vec3(1.f, -y, 0.f));
     glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_model"), 1, GL_FALSE, glm::value_ptr(new_transform));
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, nullptr);
 
     glBindVertexArray(0);
 
