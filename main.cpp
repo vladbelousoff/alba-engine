@@ -121,7 +121,7 @@ float delta_time = 0.f;
 
 struct
 {
-  float distance_to_origin{ 5.0f };
+  float distance_to_origin{ 3.45f };
   float phi{ 0.6f }, theta{ 2.7f };
 } camera;
 
@@ -198,8 +198,9 @@ int main(int argc, char* argv[])
   // Bind VAO
   glBindVertexArray(vao);
 
-  std::vector<kiwi::Vertex> vertices = kiwi::generate_grid_vertices(1.f, 32);
-  std::vector<GLuint> indices = kiwi::generate_grid_indices(32);
+  constexpr int side_n = 32;
+  std::vector<kiwi::Vertex> vertices = kiwi::generate_grid_vertices(1.f, side_n);
+  std::vector<GLuint> indices = kiwi::generate_grid_indices(side_n);
 
   // Bind VBO and copy vertices data
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -299,6 +300,7 @@ int main(int argc, char* argv[])
     ImGui::Text("Orbit Camera");
     ImGui::SliderFloat("Phi", &camera.phi, 0.0f, glm::pi<float>() * 2.f);
     ImGui::SliderFloat("Theta", &camera.theta, 0.0f, glm::pi<float>() * 2.f);
+    ImGui::SliderFloat("Distance", &camera.distance_to_origin, 0.0f, 100.0f);
     ImGui::End();
 
     ImGui::Render();
