@@ -79,8 +79,8 @@ namespace kiwi {
       for (int j = 0; j <= n; ++j) {
         Vertex v{};
         v.x = -size / 2.0f + (float)j * step;
-        v.y = -size / 2.0f + (float)i * step;
-        v.z = 0.0f;
+        v.y = 0.0f;
+        v.z = -size / 2.0f + (float)i * step;
         grid_vertices.push_back(v);
       }
     }
@@ -114,7 +114,24 @@ namespace kiwi {
 
     return grid_indices;
   }
+
 } // namespace kiwi
+
+float delta_time = 0.f;
+
+struct
+{
+  float distance_to_origin{ 5.0f };
+  float phi{ 0.6f }, theta{ 2.7f };
+} camera;
+
+// Function to handle key presses
+void key_callback(GLFWwindow* window, int key, int, int action, int)
+{
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+    glfwSetWindowShouldClose(window, GLFW_TRUE);
+  }
+}
 
 int main(int argc, char* argv[])
 {
@@ -141,6 +158,9 @@ int main(int argc, char* argv[])
     glfwTerminate();
     return -1;
   }
+
+  // Set the key callback
+  glfwSetKeyCallback(window, key_callback);
 
   // Make the window's context current
   glfwMakeContextCurrent(window);
@@ -216,30 +236,22 @@ int main(int argc, char* argv[])
 
   glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_projection"), 1, GL_FALSE, glm::value_ptr(proj));
 
-  // Define orbit camera parameters
-  float camera_radius = -5.0f;
-  float camera_theta = 0.0f;                   // Horizontal angle around the target point
-  float camera_phi = 0.0f;                     // Vertical angle around the target point
-  glm::vec3 target_position(0.0f, 0.0f, 0.0f); // Assuming the target is at the origin
-
   auto transform = glm::mat4(1.0f);
   auto last_time = glfwGetTime();
 
   while (!glfwWindowShouldClose(window)) {
     const auto current_time = glfwGetTime();
-    auto delta_time = current_time - last_time;
-    spdlog::info("delta_time: {}", delta_time);
+    delta_time = (float)(current_time - last_time);
     last_time = current_time;
 
     glfwPollEvents();
 
-    glm::vec3 camera_position;
-    camera_position.x = target_position.x + camera_radius * cos(camera_theta) * sin(camera_phi);
-    camera_position.y = target_position.z + camera_radius * sin(camera_theta) * sin(camera_phi);
-    camera_position.z = target_position.y + camera_radius * cos(camera_phi);
+    float x = camera.distance_to_origin * glm::sin(camera.phi) * glm::cos(camera.theta);
+    float y = camera.distance_to_origin * glm::cos(camera.phi);
+    float z = camera.distance_to_origin * glm::sin(camera.phi) * glm::sin(camera.theta);
 
     // Calculate view matrix
-    glm::mat4 view = glm::lookAt(camera_position, target_position, glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 view = glm::lookAt(glm::vec3(x, y, z), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 
     // Update uniform
     glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_view"), 1, GL_FALSE, glm::value_ptr(view));
@@ -257,18 +269,20 @@ int main(int argc, char* argv[])
 
     glUniform1f(glGetUniformLocation(shader_program, "u_time"), (float)current_time);
 
-    const auto y = (float)glm::sin(current_time);
-    auto new_transform = glm::translate(transform, glm::vec3(-1.f, y, 0.f));
+    const auto model_y = (float)glm::sin(current_time);
+    auto new_transform = glm::translate(transform, glm::vec3(0.f, model_y, 0.f));
     glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_model"), 1, GL_FALSE, glm::value_ptr(new_transform));
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, nullptr);
 
-    new_transform = glm::translate(transform, glm::vec3(1.f, -y, 0.f));
+#if 0
+    new_transform = glm::translate(transform, glm::vec3(1.f, -model_y, 0.f));
     glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_model"), 1, GL_FALSE, glm::value_ptr(new_transform));
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, nullptr);
+#endif
 
     glBindVertexArray(0);
 
@@ -282,6 +296,9 @@ int main(int argc, char* argv[])
     ImGui::SliderFloat("Red", &bg_color_red, 0.0f, 1.0f);
     ImGui::SliderFloat("Green", &bg_color_green, 0.0f, 1.0f);
     ImGui::SliderFloat("Blue", &bg_color_blue, 0.0f, 1.0f);
+    ImGui::Text("Orbit Camera");
+    ImGui::SliderFloat("Phi", &camera.phi, 0.0f, glm::pi<float>() * 2.f);
+    ImGui::SliderFloat("Theta", &camera.theta, 0.0f, glm::pi<float>() * 2.f);
     ImGui::End();
 
     ImGui::Render();
