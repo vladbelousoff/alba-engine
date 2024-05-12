@@ -7,11 +7,13 @@ dependencies = [
     dependency('imgui'),
     dependency('glm'),
     dependency('spdlog'),
+    dependency('gtest'),
 ]
 
 sources = [
     'main.cpp',
     'shader.cpp',
+    'string_manager.cpp',
 ]
 
 executable('kiwi', sources,

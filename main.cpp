@@ -10,6 +10,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
 
 namespace kiwi {
@@ -113,6 +114,9 @@ int main(int argc, char* argv[])
 {
   (void)argc;
   (void)argv;
+
+  testing::InitGoogleTest();
+  (void)RUN_ALL_TESTS();
 
   if (!glfwInit()) {
     spdlog::error("Failed to initialize GLFW");
@@ -248,14 +252,6 @@ int main(int argc, char* argv[])
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, nullptr);
-
-#if 0
-    new_transform = glm::translate(transform, glm::vec3(1.f, -model_y, 0.f));
-    glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_model"), 1, GL_FALSE, glm::value_ptr(new_transform));
-
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, nullptr);
-#endif
 
     glBindVertexArray(0);
 
