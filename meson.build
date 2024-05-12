@@ -9,5 +9,10 @@ dependencies = [
     dependency('spdlog'),
 ]
 
-executable('kiwi', 'main.cpp',
+sources = [
+    'main.cpp',
+    'shader.cpp',
+]
+
+executable('kiwi', sources,
            dependencies : dependencies)

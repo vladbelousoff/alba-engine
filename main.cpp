@@ -1,3 +1,4 @@
+#include "shader.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -36,31 +37,6 @@ namespace kiwi {
       "  float blue = (sin(u_time) + 1.0) * 0.5;\n"
       "  frag_color = vec4(1.0, 0.5, blue, 1.0);\n"
       "}\n";
-
-  static uint32_t compile_shader(int shader_type, const std::string& source)
-  {
-    uint32_t shader_id = glCreateShader(shader_type);
-
-    const char* source_data = source.data();
-    glShaderSource(shader_id, 1, (const GLchar**)&source_data, nullptr);
-    glCompileShader(shader_id);
-
-    GLint shader_compiled;
-    glGetShaderiv(shader_id, GL_COMPILE_STATUS, &shader_compiled);
-
-    if (!shader_compiled) {
-      int log_msg_len;
-      glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &log_msg_len);
-      std::vector<char> shader_log(log_msg_len + 1);
-      glGetShaderInfoLog(shader_id, log_msg_len, &log_msg_len, shader_log.data());
-      shader_log.at(log_msg_len) = 0;
-      spdlog::error("Shader compilation failed, the compile log: {}", shader_log.data());
-    } else {
-      spdlog::info("Shader {} compiled successfully", shader_type);
-    }
-
-    return shader_id;
-  }
 
   struct Vertex
   {
@@ -222,20 +198,16 @@ int main(int argc, char* argv[])
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
 
-  uint32_t frag_shader = kiwi::compile_shader(GL_FRAGMENT_SHADER, kiwi::default_shader_frag);
-  uint32_t vert_shader = kiwi::compile_shader(GL_VERTEX_SHADER, kiwi::default_shader_vert);
-
-  GLuint shader_program = glCreateProgram();
-  glAttachShader(shader_program, frag_shader);
-  glAttachShader(shader_program, vert_shader);
-  glLinkProgram(shader_program);
+  auto frag = kiwi::ShaderManager::create_shader(kiwi::default_shader_frag, kiwi::ShaderType::FRAG);
+  auto vert = kiwi::ShaderManager::create_shader(kiwi::default_shader_vert, kiwi::ShaderType::VERT);
+  auto prog = kiwi::ShaderManager::create_program(vert, frag);
 
   glm::mat4 proj = glm::perspective(glm::radians(45.0f), 1920.f / 1080.f, 0.1f, 100.0f);
 
   // Needed before setting uniforms
-  glUseProgram(shader_program);
+  glUseProgram(prog.id);
 
-  glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_projection"), 1, GL_FALSE, glm::value_ptr(proj));
+  glUniformMatrix4fv(glGetUniformLocation(prog.id, "u_projection"), 1, GL_FALSE, glm::value_ptr(proj));
 
   auto transform = glm::mat4(1.0f);
   auto last_time = glfwGetTime();
@@ -255,7 +227,7 @@ int main(int argc, char* argv[])
     glm::mat4 view = glm::lookAt(glm::vec3(x, y, z), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 
     // Update uniform
-    glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(prog.id, "u_view"), 1, GL_FALSE, glm::value_ptr(view));
 
     static float bg_color_red = 0.144f;
     static float bg_color_green = 0.186f;
@@ -265,14 +237,14 @@ int main(int argc, char* argv[])
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glCullFace(GL_BACK);
 
-    glUseProgram(shader_program);
+    glUseProgram(prog.id);
     glBindVertexArray(vao);
 
-    glUniform1f(glGetUniformLocation(shader_program, "u_time"), (float)current_time);
+    glUniform1f(glGetUniformLocation(prog.id, "u_time"), (float)current_time);
 
     const auto model_y = (float)glm::sin(current_time);
     auto new_transform = glm::translate(transform, glm::vec3(0.f, model_y, 0.f));
-    glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_model"), 1, GL_FALSE, glm::value_ptr(new_transform));
+    glUniformMatrix4fv(glGetUniformLocation(prog.id, "u_model"), 1, GL_FALSE, glm::value_ptr(new_transform));
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, nullptr);
