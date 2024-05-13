@@ -1,9 +1,11 @@
 #pragma once
 
 #include <cstdint>
+#include <spdlog/spdlog.h>
 #include <string>
 
-#include <spdlog/spdlog.h>
+#include "glm/fwd.hpp"
+#include "string_manager.h"
 
 namespace kiwi {
 
@@ -15,20 +17,32 @@ namespace kiwi {
 
   struct ShaderManager;
 
-  struct ShaderHandle
+  class ShaderHandle
   {
+    friend struct ShaderManager;
+
+  private:
     uint32_t id;
   };
 
-  struct ProgramHandle
+  class ProgramHandle
   {
+    friend struct ShaderManager;
+
+  private:
     uint32_t id;
   };
 
   struct ShaderManager
   {
+    // general stuff
     static auto create_shader(const std::string& source, ShaderType type) -> ShaderHandle;
     static auto create_program(ShaderHandle vert, ShaderHandle frag) -> ProgramHandle;
+    static auto use_program(ProgramHandle handle) -> void;
+
+    // uniform setters
+    static auto set_uniform(ProgramHandle handle, StringID name, float value) -> void;
+    static auto set_uniform(ProgramHandle handle, StringID name, const glm::mat4& mat) -> void;
   };
 } // namespace kiwi
 

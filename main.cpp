@@ -8,7 +8,6 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
@@ -209,9 +208,10 @@ int main(int argc, char* argv[])
   glm::mat4 proj = glm::perspective(glm::radians(45.0f), 1920.f / 1080.f, 0.1f, 100.0f);
 
   // Needed before setting uniforms
-  glUseProgram(prog.id);
+  kiwi::ShaderManager::use_program(prog);
 
-  glUniformMatrix4fv(glGetUniformLocation(prog.id, "u_projection"), 1, GL_FALSE, glm::value_ptr(proj));
+  static kiwi::StringID u_projection = kiwi::StringManager::get_id_by_string("u_projection");
+  kiwi::ShaderManager::set_uniform(prog, u_projection, proj);
 
   auto transform = glm::mat4(1.0f);
   auto last_time = glfwGetTime();
@@ -231,7 +231,8 @@ int main(int argc, char* argv[])
     glm::mat4 view = glm::lookAt(glm::vec3(x, y, z), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 
     // Update uniform
-    glUniformMatrix4fv(glGetUniformLocation(prog.id, "u_view"), 1, GL_FALSE, glm::value_ptr(view));
+    static kiwi::StringID u_uniform = kiwi::StringManager::get_id_by_string("u_view");
+    kiwi::ShaderManager::set_uniform(prog, u_uniform, view);
 
     static float bg_color_red = 0.144f;
     static float bg_color_green = 0.186f;
@@ -241,14 +242,17 @@ int main(int argc, char* argv[])
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glCullFace(GL_BACK);
 
-    glUseProgram(prog.id);
+    kiwi::ShaderManager::use_program(prog);
     glBindVertexArray(vao);
 
-    glUniform1f(glGetUniformLocation(prog.id, "u_time"), (float)current_time);
+    static kiwi::StringID u_time = kiwi::StringManager::get_id_by_string("u_time");
+    kiwi::ShaderManager::set_uniform(prog, u_time, (float)current_time);
 
     const auto model_y = (float)glm::sin(current_time);
     auto new_transform = glm::translate(transform, glm::vec3(0.f, model_y, 0.f));
-    glUniformMatrix4fv(glGetUniformLocation(prog.id, "u_model"), 1, GL_FALSE, glm::value_ptr(new_transform));
+
+    static kiwi::StringID u_model = kiwi::StringManager::get_id_by_string("u_model");
+    kiwi::ShaderManager::set_uniform(prog, u_model, new_transform);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, nullptr);

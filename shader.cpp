@@ -1,4 +1,5 @@
 #include "shader.h"
+#include "glm/gtc/type_ptr.hpp"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -50,6 +51,23 @@ auto kiwi::ShaderManager::create_program(kiwi::ShaderHandle vert, kiwi::ShaderHa
 
   kiwi::ProgramHandle handle{};
   handle.id = shader_program;
-  
+
   return handle;
+}
+
+auto kiwi::ShaderManager::use_program(kiwi::ProgramHandle handle) -> void
+{
+  glUseProgram(handle.id);
+}
+
+auto kiwi::ShaderManager::set_uniform(ProgramHandle handle, StringID name, float value) -> void
+{
+  const std::string& string_name = kiwi::StringManager::get_string_by_id(name);
+  glUniform1f(glGetUniformLocation(handle.id, string_name.c_str()), value);
+}
+
+auto kiwi::ShaderManager::set_uniform(kiwi::ProgramHandle handle, kiwi::StringID name, const glm::mat4& mat) -> void
+{
+  const std::string& string_name = kiwi::StringManager::get_string_by_id(name);
+  glUniformMatrix4fv(glGetUniformLocation(handle.id, string_name.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
 }
