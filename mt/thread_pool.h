@@ -10,7 +10,7 @@ namespace kiwi {
     explicit ThreadPool(std::size_t num_threads);
     ~ThreadPool();
 
-    ThreadPool(const Job& ThreadPool) = delete;
+    ThreadPool(const Job& other) = delete;
     ThreadPool(ThreadPool&& other) = delete;
     ThreadPool& operator=(const ThreadPool& other) = delete;
     ThreadPool& operator=(ThreadPool&& other) = delete;
