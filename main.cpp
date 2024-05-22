@@ -1,16 +1,16 @@
-#include "shader.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <CLI/CLI.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <gtest/gtest.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
+
+#include "shader.h"
 
 namespace kiwi {
   static void handle_glfw_error(int error, const char* description)
@@ -111,11 +111,16 @@ void key_callback(GLFWwindow* window, int key, int, int action, int)
 
 int main(int argc, char* argv[])
 {
-  (void)argc;
-  (void)argv;
+  CLI::App app{ "Kiwi Engine" };
+  argv = app.ensure_utf8(argv);
 
-  testing::InitGoogleTest();
-  (void)RUN_ALL_TESTS();
+  CLI::Option* run_tests = app.add_flag("--run-tests");
+  CLI11_PARSE(app, argc, argv)
+
+  if (run_tests->count()) {
+    testing::InitGoogleTest();
+    return RUN_ALL_TESTS();
+  }
 
   if (!glfwInit()) {
     spdlog::error("Failed to initialize GLFW");
@@ -131,7 +136,7 @@ int main(int argc, char* argv[])
   glfwSetErrorCallback(kiwi::handle_glfw_error);
 
   // Create a windowed mode window and its OpenGL context
-  GLFWwindow* window = glfwCreateWindow(1'920, 1'080, "Kiwi Engine", nullptr, nullptr);
+  GLFWwindow* window = glfwCreateWindow(1'920, 1'080, app.get_name().c_str(), nullptr, nullptr);
   if (!window) {
     spdlog::error("Failed to create GLFW window");
     glfwTerminate();
@@ -210,8 +215,7 @@ int main(int argc, char* argv[])
   // Needed before setting uniforms
   kiwi::ShaderManager::use_program(prog);
 
-  static kiwi::StringID u_projection = kiwi::StringManager::get_id_by_string("u_projection");
-  kiwi::ShaderManager::set_uniform(prog, u_projection, proj);
+  kiwi::ShaderManager::set_uniform(prog, kiwi::StringID{ "u_projection" }, proj);
 
   auto transform = glm::mat4(1.0f);
   auto last_time = glfwGetTime();
@@ -231,8 +235,7 @@ int main(int argc, char* argv[])
     glm::mat4 view = glm::lookAt(glm::vec3(x, y, z), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 
     // Update uniform
-    static kiwi::StringID u_uniform = kiwi::StringManager::get_id_by_string("u_view");
-    kiwi::ShaderManager::set_uniform(prog, u_uniform, view);
+    kiwi::ShaderManager::set_uniform(prog, kiwi::StringID{ "u_view" }, view);
 
     static float bg_color_red = 0.144f;
     static float bg_color_green = 0.186f;
@@ -245,14 +248,11 @@ int main(int argc, char* argv[])
     kiwi::ShaderManager::use_program(prog);
     glBindVertexArray(vao);
 
-    static kiwi::StringID u_time = kiwi::StringManager::get_id_by_string("u_time");
-    kiwi::ShaderManager::set_uniform(prog, u_time, (float)current_time);
+    kiwi::ShaderManager::set_uniform(prog, kiwi::StringID{ "u_time" }, (float)current_time);
 
     const auto model_y = (float)glm::sin(current_time);
     auto new_transform = glm::translate(transform, glm::vec3(0.f, model_y, 0.f));
-
-    static kiwi::StringID u_model = kiwi::StringManager::get_id_by_string("u_model");
-    kiwi::ShaderManager::set_uniform(prog, u_model, new_transform);
+    kiwi::ShaderManager::set_uniform(prog, kiwi::StringID{ "u_model" }, new_transform);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, nullptr);

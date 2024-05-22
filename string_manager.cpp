@@ -7,6 +7,26 @@ std::unordered_map<std::string, kiwi::StringID> kiwi::StringManager::string_to_i
 std::size_t kiwi::StringManager::string_counter = 0;
 kiwi::StringID kiwi::StringManager::invalid_id = kiwi::StringManager::get_id_by_string(kiwi::StringManager::invalid_string);
 
+kiwi::StringID::StringID()
+    : id{ 0 }
+{
+}
+
+kiwi::StringID::StringID(const std::string& string)
+    : id{ StringManager::get_id_by_string(string).id }
+{
+}
+
+bool kiwi::StringID::operator==(const kiwi::StringID& other) const
+{
+  return id == other.id;
+}
+
+auto kiwi::StringID::to_string() const -> const std::string&
+{
+  return StringManager::get_string_by_id(*this);
+}
+
 auto kiwi::StringManager::get_string_by_id(kiwi::StringID id) -> const std::string&
 {
   std::shared_lock<std::shared_mutex> lock(mutex);
@@ -32,6 +52,7 @@ auto kiwi::StringManager::get_id_by_string(const std::string& string) -> kiwi::S
 
   {
     std::unique_lock<std::shared_mutex> lock(mutex);
+    assert(string_counter < std::numeric_limits<std::size_t>::max());
     id.id = string_counter++;
     string_to_id.insert({ string, id });
     id_to_string.insert({ id, string });
@@ -48,10 +69,10 @@ TEST(StringManager, InvalidStringID)
 
 TEST(StringManager, Simple)
 {
-  kiwi::StringID a = kiwi::StringManager::get_id_by_string("Hello!");
-  kiwi::StringID b = kiwi::StringManager::get_id_by_string("Hello!");
+  kiwi::StringID a = kiwi::StringID("Hello!");
+  kiwi::StringID b = kiwi::StringID("Hello!");
   EXPECT_EQ(a, b);
-  EXPECT_EQ(kiwi::StringManager::get_string_by_id(a), kiwi::StringManager::get_string_by_id(b));
+  EXPECT_EQ(a.to_string(), b.to_string());
 }
 
 TEST(StringManager, Mulithreading)
@@ -60,7 +81,7 @@ TEST(StringManager, Mulithreading)
 
   auto create_and_compare = []() {
     for (int i = 0; i < count; ++i) {
-      kiwi::StringManager::get_id_by_string(std::to_string(i));
+      kiwi::StringID(std::to_string(i));
     }
   };
 
@@ -72,8 +93,8 @@ TEST(StringManager, Mulithreading)
 
   for (int i = 0; i < count; ++i) {
     std::string string = std::to_string(i);
-    kiwi::StringID id = kiwi::StringManager::get_id_by_string(string);
-    EXPECT_EQ(kiwi::StringManager::get_string_by_id(id), string);
+    kiwi::StringID id = kiwi::StringID(string);
+    EXPECT_EQ(id.to_string(), string);
   }
 }
 
