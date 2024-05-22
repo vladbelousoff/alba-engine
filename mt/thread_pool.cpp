@@ -60,7 +60,5 @@ TEST(ThreadPool, BasicCounter)
   }
 
   thread_pool.wait_for_all_jobs();
-
-  spdlog::info("Counter: {}", counter.load());
   EXPECT_EQ(counter.load(), 1'000);
 }
