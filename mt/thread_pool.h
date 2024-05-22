@@ -21,7 +21,6 @@ namespace kiwi {
   private:
     std::vector<WorkerThread::UniquePtr> workers;
     JobQueue job_queue;
-    SpinLock spin_lock;
   };
 
 } // namespace kiwi
