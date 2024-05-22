@@ -8,20 +8,13 @@
 
 namespace kiwi {
 
-  enum class JobPriority
-  {
-    NORMAL,
-    HIGH,
-    CRITICAL,
-  };
-
   class Job
   {
   public:
-    using UniqPtr = std::unique_ptr<Job>;
+    using UniquePtr = std::unique_ptr<Job>;
 
   public:
-    explicit Job(StringID name, JobPriority priority = JobPriority::NORMAL);
+    explicit Job(StringID name);
     virtual ~Job() = default;
 
     Job(const Job& other) = delete;
@@ -29,18 +22,12 @@ namespace kiwi {
     Job& operator=(const Job& other) = delete;
     Job& operator=(Job&& other) = delete;
 
-    void add_wait(Job& job_to_wait);
-    void add_wait(std::vector<Job>& jobs);
-
     auto get_name() const -> StringID;
-    auto get_priority() const -> JobPriority;
 
     virtual void execute() = 0;
 
-  private:
+  protected:
     StringID name;
-    JobPriority priority;
-    SpinLock delete_job_lock{};
   };
 
 } // namespace kiwi

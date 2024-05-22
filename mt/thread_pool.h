@@ -10,11 +10,18 @@ namespace kiwi {
     explicit ThreadPool(std::size_t num_threads);
     ~ThreadPool();
 
-    void submit_job(const std::shared_ptr<Job>& job);
+    ThreadPool(const Job& ThreadPool) = delete;
+    ThreadPool(ThreadPool&& other) = delete;
+    ThreadPool& operator=(const ThreadPool& other) = delete;
+    ThreadPool& operator=(ThreadPool&& other) = delete;
+
+    void submit_job(Job::UniquePtr job);
+    void wait_for_all_jobs();
 
   private:
-    std::vector<std::unique_ptr<WorkerThread>> workers;
+    std::vector<WorkerThread::UniquePtr> workers;
     JobQueue job_queue;
+    SpinLock spin_lock;
   };
 
 } // namespace kiwi

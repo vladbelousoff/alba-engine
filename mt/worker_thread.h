@@ -9,7 +9,11 @@ namespace kiwi {
   class WorkerThread
   {
   public:
-    explicit WorkerThread(JobQueue& queue);
+    using UniquePtr = std::unique_ptr<WorkerThread>;
+
+  public:
+    explicit WorkerThread(kiwi::JobQueue& queue, std::size_t number);
+
     void run();
     void stop();
 
@@ -17,6 +21,7 @@ namespace kiwi {
     JobQueue& job_queue;
     std::thread thread;
     bool stop_flag{ false };
+    std::size_t number;
   };
 
 } // namespace kiwi

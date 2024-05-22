@@ -1,20 +1,21 @@
 #include "job_queue.h"
 
-void kiwi::JobQueue::push_job(const std::shared_ptr<Job>& job)
+void kiwi::JobQueue::push_job(Job::UniquePtr job)
 {
   std::unique_lock<std::mutex> lock(queue_mutex);
-  queue.push(job);
-  condition.notify_one();
+  queue.push(std::move(job));
 }
 
-auto kiwi::JobQueue::pop_job() -> std::shared_ptr<kiwi::Job>
+auto kiwi::JobQueue::pop_job() -> Job::UniquePtr
 {
   std::unique_lock<std::mutex> lock(queue_mutex);
-  while (queue.empty()) {
-    condition.wait(lock);
+  if (queue.empty()) {
+    return nullptr;
   }
-  auto job = queue.front();
+
+  Job::UniquePtr job = std::move(queue.front());
   queue.pop();
+
   return job;
 }
 
