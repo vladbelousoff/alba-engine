@@ -1,8 +1,6 @@
 #include "thread_pool.h"
 
 #include <gtest/gtest.h>
-#include <spdlog/spdlog.h>
-
 #include <utility>
 
 kiwi::ThreadPool::ThreadPool(std::size_t num_threads)

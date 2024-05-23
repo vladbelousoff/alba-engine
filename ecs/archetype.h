@@ -12,9 +12,11 @@ namespace kiwi {
   class Archetype
   {
     using Type = std::vector<ComponentID>;
+    using TypeSet = std::unordered_set<ComponentID>;
 
+  private:
     Type type;
-    std::unordered_set<ComponentID> type_set;
+    TypeSet type_set;
   };
 
 } // namespace kiwi
