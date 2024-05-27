@@ -22,7 +22,7 @@ void kiwi::ThreadPool::submit_job(Job::UniquePtr job)
   job_queue.push_job(std::move(job));
 }
 
-void kiwi::ThreadPool::wait_for_all_jobs()
+void kiwi::ThreadPool::wait_for_jobs()
 {
   while (!job_queue.is_empty()) {
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
@@ -57,6 +57,6 @@ TEST(ThreadPool, BasicCounter)
     thread_pool.submit_job(std::move(job));
   }
 
-  thread_pool.wait_for_all_jobs();
+  thread_pool.wait_for_jobs();
   EXPECT_EQ(counter.load(), 1'000);
 }

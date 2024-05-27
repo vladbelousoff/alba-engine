@@ -16,7 +16,7 @@ namespace kiwi {
     ThreadPool& operator=(ThreadPool&& other) = delete;
 
     void submit_job(Job::UniquePtr job);
-    void wait_for_all_jobs();
+    void wait_for_jobs();
 
   private:
     std::vector<WorkerThread::UniquePtr> workers;
