@@ -1,9 +1,9 @@
 #pragma once
 
-namespace kiwi {
+namespace alba {
 
   class World
   {
   };
-  
-} // namespace kiwi
+
+} // namespace alba

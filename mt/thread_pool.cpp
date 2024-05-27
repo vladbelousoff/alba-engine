@@ -3,26 +3,26 @@
 #include <gtest/gtest.h>
 #include <utility>
 
-kiwi::ThreadPool::ThreadPool(std::size_t num_threads)
+alba::ThreadPool::ThreadPool(std::size_t num_threads)
 {
   for (std::size_t i = 0; i < num_threads; ++i) {
     workers.emplace_back(std::make_unique<WorkerThread>(job_queue, i));
   }
 }
 
-kiwi::ThreadPool::~ThreadPool()
+alba::ThreadPool::~ThreadPool()
 {
   for (auto& worker : workers) {
     worker->stop();
   }
 }
 
-void kiwi::ThreadPool::submit_job(Job::UniquePtr job)
+void alba::ThreadPool::submit_job(Job::UniquePtr job)
 {
   job_queue.push_job(std::move(job));
 }
 
-void kiwi::ThreadPool::wait_for_jobs()
+void alba::ThreadPool::wait_for_jobs()
 {
   while (!job_queue.is_empty()) {
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
@@ -31,11 +31,11 @@ void kiwi::ThreadPool::wait_for_jobs()
 
 TEST(ThreadPool, BasicCounter)
 {
-  class DefaultJob : public kiwi::Job
+  class DefaultJob : public alba::Job
   {
   public:
-    explicit DefaultJob(kiwi::StringID name, std::atomic<int>& counter)
-        : kiwi::Job(name)
+    explicit DefaultJob(alba::StringID name, std::atomic<int>& counter)
+        : alba::Job(name)
         , counter(counter)
     {
     }
@@ -50,10 +50,10 @@ TEST(ThreadPool, BasicCounter)
   };
 
   std::atomic<int> counter{ 0 };
-  kiwi::ThreadPool thread_pool{ 4 };
+  alba::ThreadPool thread_pool{ 4 };
 
   for (int i = 0; i < 1'000; ++i) {
-    kiwi::Job::UniquePtr job = std::make_unique<DefaultJob>(kiwi::StringID{ std::to_string(i) }, counter);
+    alba::Job::UniquePtr job = std::make_unique<DefaultJob>(alba::StringID{ std::to_string(i) }, counter);
     thread_pool.submit_job(std::move(job));
   }
 

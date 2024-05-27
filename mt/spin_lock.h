@@ -3,7 +3,7 @@
 #include <atomic>
 #include <mutex>
 
-namespace kiwi {
+namespace alba {
 
   class SpinLock
   {
@@ -38,5 +38,5 @@ namespace kiwi {
     int retries{ 0 };
   };
 
-} // namespace kiwi
+} // namespace alba
 

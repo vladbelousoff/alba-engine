@@ -1,13 +1,13 @@
 #include "worker_thread.h"
 
-kiwi::WorkerThread::WorkerThread(kiwi::JobQueue& queue, std::size_t number)
+alba::WorkerThread::WorkerThread(alba::JobQueue& queue, std::size_t number)
     : job_queue(queue)
     , thread(&WorkerThread::run, this)
     , number(number)
 {
 }
 
-void kiwi::WorkerThread::run()
+void alba::WorkerThread::run()
 {
   while (!stop_flag) {
     Job::UniquePtr job = job_queue.pop_job();
@@ -18,7 +18,7 @@ void kiwi::WorkerThread::run()
   }
 }
 
-void kiwi::WorkerThread::stop()
+void alba::WorkerThread::stop()
 {
   spdlog::info("Stopping worker thread {}", number);
 

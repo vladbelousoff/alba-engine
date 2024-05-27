@@ -1,6 +1,6 @@
 #pragma once
 
-namespace kiwi {
+namespace alba {
 
   /// Compile-time bit size counting
   template <int N> struct bits_count_helper
@@ -32,4 +32,4 @@ namespace kiwi {
     };
   };
 
-} // namespace kiwi
+} // namespace alba

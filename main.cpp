@@ -12,7 +12,7 @@
 
 #include "shader.h"
 
-namespace kiwi {
+namespace alba {
   static void handle_glfw_error(int error, const char* description)
   {
     spdlog::error("Code: {}, description: {}", error, description);
@@ -91,7 +91,7 @@ namespace kiwi {
     return grid_indices;
   }
 
-} // namespace kiwi
+} // namespace alba
 
 float delta_time = 0.f;
 
@@ -111,7 +111,7 @@ void key_callback(GLFWwindow* window, int key, int, int action, int)
 
 int main(int argc, char* argv[])
 {
-  CLI::App app{ "Kiwi Engine" };
+  CLI::App app{ "Alba Engine" };
   argv = app.ensure_utf8(argv);
 
   CLI::Option* run_tests = app.add_flag("--run-tests");
@@ -133,7 +133,7 @@ int main(int argc, char* argv[])
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
   // Set error callback
-  glfwSetErrorCallback(kiwi::handle_glfw_error);
+  glfwSetErrorCallback(alba::handle_glfw_error);
 
   // Create a windowed mode window and its OpenGL context
   GLFWwindow* window = glfwCreateWindow(1'920, 1'080, app.get_name().c_str(), nullptr, nullptr);
@@ -183,19 +183,19 @@ int main(int argc, char* argv[])
   glBindVertexArray(vao);
 
   constexpr int side_n = 32;
-  std::vector<kiwi::Vertex> vertices = kiwi::generate_grid_vertices(1.f, side_n);
-  std::vector<GLuint> indices = kiwi::generate_grid_indices(side_n);
+  std::vector<alba::Vertex> vertices = alba::generate_grid_vertices(1.f, side_n);
+  std::vector<GLuint> indices = alba::generate_grid_indices(side_n);
 
   // Bind VBO and copy vertices data
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(vertices.size() * sizeof(kiwi::Vertex)), vertices.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(vertices.size() * sizeof(alba::Vertex)), vertices.data(), GL_STATIC_DRAW);
 
   // Bind EBO and copy indices data
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)(indices.size() * sizeof(GLuint)), indices.data(), GL_STATIC_DRAW);
 
   // Set vertex attribute pointers
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(kiwi::Vertex), (GLvoid*)nullptr);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(alba::Vertex), (GLvoid*)nullptr);
   glEnableVertexAttribArray(0);
 
   // Unbind VAO, VBO, and EBO
@@ -206,16 +206,16 @@ int main(int argc, char* argv[])
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
 
-  auto frag = kiwi::ShaderManager::create_shader(kiwi::default_shader_frag, kiwi::ShaderType::FRAG);
-  auto vert = kiwi::ShaderManager::create_shader(kiwi::default_shader_vert, kiwi::ShaderType::VERT);
-  auto prog = kiwi::ShaderManager::create_program(vert, frag);
+  auto frag = alba::ShaderManager::create_shader(alba::default_shader_frag, alba::ShaderType::FRAG);
+  auto vert = alba::ShaderManager::create_shader(alba::default_shader_vert, alba::ShaderType::VERT);
+  auto prog = alba::ShaderManager::create_program(vert, frag);
 
   glm::mat4 proj = glm::perspective(glm::radians(45.0f), 1920.f / 1080.f, 0.1f, 100.0f);
 
   // Needed before setting uniforms
-  kiwi::ShaderManager::use_program(prog);
+  alba::ShaderManager::use_program(prog);
 
-  kiwi::ShaderManager::set_uniform(prog, kiwi::StringID{ "u_projection" }, proj);
+  alba::ShaderManager::set_uniform(prog, alba::StringID{ "u_projection" }, proj);
 
   auto transform = glm::mat4(1.0f);
   auto last_time = glfwGetTime();
@@ -235,7 +235,7 @@ int main(int argc, char* argv[])
     glm::mat4 view = glm::lookAt(glm::vec3(x, y, z), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 
     // Update uniform
-    kiwi::ShaderManager::set_uniform(prog, kiwi::StringID{ "u_view" }, view);
+    alba::ShaderManager::set_uniform(prog, alba::StringID{ "u_view" }, view);
 
     static float bg_color_red = 0.144f;
     static float bg_color_green = 0.186f;
@@ -245,14 +245,14 @@ int main(int argc, char* argv[])
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glCullFace(GL_BACK);
 
-    kiwi::ShaderManager::use_program(prog);
+    alba::ShaderManager::use_program(prog);
     glBindVertexArray(vao);
 
-    kiwi::ShaderManager::set_uniform(prog, kiwi::StringID{ "u_time" }, (float)current_time);
+    alba::ShaderManager::set_uniform(prog, alba::StringID{ "u_time" }, (float)current_time);
 
     const auto model_y = (float)glm::sin(current_time);
     auto new_transform = glm::translate(transform, glm::vec3(0.f, model_y, 0.f));
-    kiwi::ShaderManager::set_uniform(prog, kiwi::StringID{ "u_model" }, new_transform);
+    alba::ShaderManager::set_uniform(prog, alba::StringID{ "u_model" }, new_transform);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, nullptr);

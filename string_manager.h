@@ -8,7 +8,7 @@
 #include <thread>
 #include <unordered_map>
 
-namespace kiwi {
+namespace alba {
 
   class StringManager;
 
@@ -46,19 +46,19 @@ namespace kiwi {
     static std::unordered_map<std::string, StringID> string_to_id;
   };
 
-} // namespace kiwi
+} // namespace alba
 
-template <> struct std::hash<kiwi::StringID>
+template <> struct std::hash<alba::StringID>
 {
-  std::size_t operator()(const kiwi::StringID& string) const
+  std::size_t operator()(const alba::StringID& string) const
   {
     return hash<std::size_t>{}(string.id);
   }
 };
 
-template <> struct fmt::formatter<kiwi::StringID> : formatter<std::string>
+template <> struct fmt::formatter<alba::StringID> : formatter<std::string>
 {
-  auto format(kiwi::StringID type, format_context& ctx)
+  auto format(alba::StringID type, format_context& ctx)
   {
     return formatter<std::string>::format(type.to_string(), ctx);
   }

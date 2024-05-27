@@ -1,33 +1,33 @@
 #include "string_manager.h"
 
-std::shared_mutex kiwi::StringManager::mutex;
-std::string kiwi::StringManager::invalid_string;
-std::unordered_map<kiwi::StringID, std::string> kiwi::StringManager::id_to_string;
-std::unordered_map<std::string, kiwi::StringID> kiwi::StringManager::string_to_id;
-std::size_t kiwi::StringManager::string_counter = 0;
-kiwi::StringID kiwi::StringManager::invalid_id = kiwi::StringManager::get_id_by_string(kiwi::StringManager::invalid_string);
+std::shared_mutex alba::StringManager::mutex;
+std::string alba::StringManager::invalid_string;
+std::unordered_map<alba::StringID, std::string> alba::StringManager::id_to_string;
+std::unordered_map<std::string, alba::StringID> alba::StringManager::string_to_id;
+std::size_t alba::StringManager::string_counter = 0;
+alba::StringID alba::StringManager::invalid_id = alba::StringManager::get_id_by_string(alba::StringManager::invalid_string);
 
-kiwi::StringID::StringID()
+alba::StringID::StringID()
     : id{ 0 }
 {
 }
 
-kiwi::StringID::StringID(const std::string& string)
+alba::StringID::StringID(const std::string& string)
     : id{ StringManager::get_id_by_string(string).id }
 {
 }
 
-bool kiwi::StringID::operator==(const kiwi::StringID& other) const
+bool alba::StringID::operator==(const alba::StringID& other) const
 {
   return id == other.id;
 }
 
-auto kiwi::StringID::to_string() const -> const std::string&
+auto alba::StringID::to_string() const -> const std::string&
 {
   return StringManager::get_string_by_id(*this);
 }
 
-auto kiwi::StringManager::get_string_by_id(kiwi::StringID id) -> const std::string&
+auto alba::StringManager::get_string_by_id(alba::StringID id) -> const std::string&
 {
   std::shared_lock<std::shared_mutex> lock(mutex);
   auto it = id_to_string.find(id);
@@ -38,7 +38,7 @@ auto kiwi::StringManager::get_string_by_id(kiwi::StringID id) -> const std::stri
   return invalid_string;
 }
 
-auto kiwi::StringManager::get_id_by_string(const std::string& string) -> kiwi::StringID
+auto alba::StringManager::get_id_by_string(const std::string& string) -> alba::StringID
 {
   {
     std::shared_lock<std::shared_mutex> lock(mutex);
@@ -63,14 +63,14 @@ auto kiwi::StringManager::get_id_by_string(const std::string& string) -> kiwi::S
 
 TEST(StringManager, InvalidStringID)
 {
-  kiwi::StringID invalid;
-  EXPECT_EQ(invalid, kiwi::StringManager::invalid_id);
+  alba::StringID invalid;
+  EXPECT_EQ(invalid, alba::StringManager::invalid_id);
 }
 
 TEST(StringManager, Simple)
 {
-  kiwi::StringID a = kiwi::StringID("Hello!");
-  kiwi::StringID b = kiwi::StringID("Hello!");
+  alba::StringID a = alba::StringID("Hello!");
+  alba::StringID b = alba::StringID("Hello!");
   EXPECT_EQ(a, b);
   EXPECT_EQ(a.to_string(), b.to_string());
 }
@@ -81,7 +81,7 @@ TEST(StringManager, Mulithreading)
 
   auto create_and_compare = []() {
     for (int i = 0; i < count; ++i) {
-      kiwi::StringID(std::to_string(i));
+      alba::StringID(std::to_string(i));
     }
   };
 
@@ -93,7 +93,7 @@ TEST(StringManager, Mulithreading)
 
   for (int i = 0; i < count; ++i) {
     std::string string = std::to_string(i);
-    kiwi::StringID id = kiwi::StringID(string);
+    alba::StringID id = alba::StringID(string);
     EXPECT_EQ(id.to_string(), string);
   }
 }

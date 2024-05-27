@@ -5,7 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
 
-auto kiwi::ShaderManager::create_shader(const std::string& source, ShaderType type) -> kiwi::ShaderHandle
+auto alba::ShaderManager::create_shader(const std::string& source, ShaderType type) -> alba::ShaderHandle
 {
   uint32_t shader_id;
   switch (type) {
@@ -35,36 +35,36 @@ auto kiwi::ShaderManager::create_shader(const std::string& source, ShaderType ty
     spdlog::info("Shader {} compiled successfully", type);
   }
 
-  kiwi::ShaderHandle handle{};
+  alba::ShaderHandle handle{};
   handle.id = shader_id;
 
   return handle;
 }
 
-auto kiwi::ShaderManager::create_program(kiwi::ShaderHandle vert, kiwi::ShaderHandle frag) -> kiwi::ProgramHandle
+auto alba::ShaderManager::create_program(alba::ShaderHandle vert, alba::ShaderHandle frag) -> alba::ProgramHandle
 {
   GLuint shader_program = glCreateProgram();
   glAttachShader(shader_program, vert.id);
   glAttachShader(shader_program, frag.id);
   glLinkProgram(shader_program);
 
-  kiwi::ProgramHandle handle{};
+  alba::ProgramHandle handle{};
   handle.id = shader_program;
 
   return handle;
 }
 
-auto kiwi::ShaderManager::use_program(kiwi::ProgramHandle handle) -> void
+auto alba::ShaderManager::use_program(alba::ProgramHandle handle) -> void
 {
   glUseProgram(handle.id);
 }
 
-auto kiwi::ShaderManager::set_uniform(ProgramHandle handle, StringID name, float value) -> void
+auto alba::ShaderManager::set_uniform(ProgramHandle handle, StringID name, float value) -> void
 {
   glUniform1f(glGetUniformLocation(handle.id, name.to_string().c_str()), value);
 }
 
-auto kiwi::ShaderManager::set_uniform(kiwi::ProgramHandle handle, kiwi::StringID name, const glm::mat4& mat) -> void
+auto alba::ShaderManager::set_uniform(alba::ProgramHandle handle, alba::StringID name, const glm::mat4& mat) -> void
 {
   glUniformMatrix4fv(glGetUniformLocation(handle.id, name.to_string().c_str()), 1, GL_FALSE, glm::value_ptr(mat));
 }

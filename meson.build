@@ -1,4 +1,4 @@
-project('kiwi', 'cpp',
+project('alba', 'cpp',
         default_options : [
             'default_library=static',
             'cpp_std=c++17',
@@ -29,5 +29,5 @@ sources = [
     'ecs/archetype.cpp',
 ]
 
-executable('kiwi', sources,
+executable('alba', sources,
            dependencies : dependencies)

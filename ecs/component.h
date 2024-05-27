@@ -5,7 +5,7 @@
 
 #include "string_manager.h"
 
-namespace kiwi {
+namespace alba {
 
   using ComponentID = StringID;
 
@@ -27,4 +27,4 @@ namespace kiwi {
 
   template <typename Self> ComponentID ComponentWrapper<Self>::id = StringID{ typeid(Self).name() };
 
-} // namespace kiwi
+} // namespace alba

@@ -7,7 +7,7 @@
 #include "glm/fwd.hpp"
 #include "string_manager.h"
 
-namespace kiwi {
+namespace alba {
 
   enum class ShaderType
   {
@@ -44,17 +44,17 @@ namespace kiwi {
     static auto set_uniform(ProgramHandle handle, StringID name, float value) -> void;
     static auto set_uniform(ProgramHandle handle, StringID name, const glm::mat4& mat) -> void;
   };
-} // namespace kiwi
+} // namespace alba
 
-template <> struct fmt::formatter<kiwi::ShaderType> : formatter<std::string>
+template <> struct fmt::formatter<alba::ShaderType> : formatter<std::string>
 {
-  auto format(kiwi::ShaderType type, format_context& ctx)
+  auto format(alba::ShaderType type, format_context& ctx)
   {
     switch (type) {
-      case kiwi::ShaderType::VERT:
-        return formatter<std::string>::format("kiwi::ShaderType::VERT", ctx);
-      case kiwi::ShaderType::FRAG:
-        return formatter<std::string>::format("kiwi::ShaderType::FRAG", ctx);
+      case alba::ShaderType::VERT:
+        return formatter<std::string>::format("alba::ShaderType::VERT", ctx);
+      case alba::ShaderType::FRAG:
+        return formatter<std::string>::format("alba::ShaderType::FRAG", ctx);
     }
     return formatter<std::string>::format("unknown", ctx);
   }

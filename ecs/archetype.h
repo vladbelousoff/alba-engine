@@ -7,7 +7,7 @@
 #include "component.h"
 #include "string_manager.h"
 
-namespace kiwi {
+namespace alba {
 
   class Archetype
   {
@@ -19,4 +19,4 @@ namespace kiwi {
     TypeSet type_set;
   };
 
-} // namespace kiwi
+} // namespace alba

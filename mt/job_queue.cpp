@@ -1,12 +1,12 @@
 #include "job_queue.h"
 
-void kiwi::JobQueue::push_job(Job::UniquePtr job)
+void alba::JobQueue::push_job(Job::UniquePtr job)
 {
   std::unique_lock<std::mutex> lock(queue_mutex);
   queue.push(std::move(job));
 }
 
-auto kiwi::JobQueue::pop_job() -> Job::UniquePtr
+auto alba::JobQueue::pop_job() -> Job::UniquePtr
 {
   std::unique_lock<std::mutex> lock(queue_mutex);
   if (queue.empty()) {
@@ -19,7 +19,7 @@ auto kiwi::JobQueue::pop_job() -> Job::UniquePtr
   return job;
 }
 
-bool kiwi::JobQueue::is_empty()
+bool alba::JobQueue::is_empty()
 {
   std::unique_lock<std::mutex> lock(queue_mutex);
   return queue.empty();

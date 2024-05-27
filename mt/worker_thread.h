@@ -4,7 +4,7 @@
 
 #include "job_queue.h"
 
-namespace kiwi {
+namespace alba {
 
   class WorkerThread
   {
@@ -12,7 +12,7 @@ namespace kiwi {
     using UniquePtr = std::unique_ptr<WorkerThread>;
 
   public:
-    explicit WorkerThread(kiwi::JobQueue& queue, std::size_t number);
+    explicit WorkerThread(alba::JobQueue& queue, std::size_t number);
 
     void run();
     void stop();
@@ -24,4 +24,4 @@ namespace kiwi {
     std::size_t number;
   };
 
-} // namespace kiwi
+} // namespace alba

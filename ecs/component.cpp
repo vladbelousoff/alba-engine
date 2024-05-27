@@ -2,22 +2,22 @@
 
 TEST(Component, Basic)
 {
-  struct ComponentInt : kiwi::ComponentWrapper<ComponentInt>
+  struct ComponentInt : alba::ComponentWrapper<ComponentInt>
   {
     int value{};
   };
 
-  struct ComponentStringID : kiwi::ComponentWrapper<ComponentStringID>
+  struct ComponentStringID : alba::ComponentWrapper<ComponentStringID>
   {
-    kiwi::StringID value{};
+    alba::StringID value{};
   };
 
   auto a = ComponentInt();
   auto b = ComponentStringID();
 
   EXPECT_EQ(a.value, 0);
-  EXPECT_EQ(b.value, kiwi::StringManager::invalid_id);
+  EXPECT_EQ(b.value, alba::StringManager::invalid_id);
 
-  EXPECT_EQ(ComponentInt::get_id(), kiwi::StringID{ typeid(ComponentInt).name() });
-  EXPECT_EQ(ComponentStringID::get_id(), kiwi::StringID{ typeid(ComponentStringID).name() });
+  EXPECT_EQ(ComponentInt::get_id(), alba::StringID{ typeid(ComponentInt).name() });
+  EXPECT_EQ(ComponentStringID::get_id(), alba::StringID{ typeid(ComponentStringID).name() });
 }

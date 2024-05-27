@@ -6,7 +6,7 @@
 #include "spin_lock.h"
 #include "string_manager.h"
 
-namespace kiwi {
+namespace alba {
 
   class Job
   {
@@ -30,4 +30,4 @@ namespace kiwi {
     StringID name;
   };
 
-} // namespace kiwi
+} // namespace alba

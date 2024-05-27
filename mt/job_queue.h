@@ -6,7 +6,7 @@
 
 #include "job.h"
 
-namespace kiwi {
+namespace alba {
 
   class JobQueue
   {
@@ -20,4 +20,4 @@ namespace kiwi {
     std::mutex queue_mutex;
   };
 
-} // namespace kiwi
+} // namespace alba

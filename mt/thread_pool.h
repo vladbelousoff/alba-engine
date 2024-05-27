@@ -2,7 +2,7 @@
 
 #include "worker_thread.h"
 
-namespace kiwi {
+namespace alba {
 
   class ThreadPool
   {
@@ -23,4 +23,4 @@ namespace kiwi {
     JobQueue job_queue;
   };
 
-} // namespace kiwi
+} // namespace alba
