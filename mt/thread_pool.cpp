@@ -112,4 +112,22 @@ TEST(ThreadPool, Dependencies)
 
   thread_pool.wait_for_jobs();
   EXPECT_EQ(names.size(), 10);
+
+  // Checks for proper dependency handling
+  auto find_pos = [&](const std::string& name) {
+    return std::find(names.begin(), names.end(), alba::StringID{ name }) - names.begin();
+  };
+
+  EXPECT_LT(find_pos("0"), find_pos("1"));
+  EXPECT_LT(find_pos("0"), find_pos("4"));
+  EXPECT_LT(find_pos("0"), find_pos("8"));
+  EXPECT_LT(find_pos("1"), find_pos("2"));
+  EXPECT_LT(find_pos("2"), find_pos("3"));
+  EXPECT_LT(find_pos("4"), find_pos("3"));
+  EXPECT_LT(find_pos("3"), find_pos("5"));
+  EXPECT_LT(find_pos("5"), find_pos("6"));
+  EXPECT_LT(find_pos("5"), find_pos("7"));
+  EXPECT_LT(find_pos("6"), find_pos("9"));
+  EXPECT_LT(find_pos("7"), find_pos("9"));
+  EXPECT_LT(find_pos("8"), find_pos("9"));
 }
