@@ -1,19 +1,19 @@
 #include "job_queue.h"
 
-void alba::JobQueue::push_job(Job::UniquePtr job)
+void alba::JobQueue::push_job(const Job::SharedPtr& job)
 {
   std::unique_lock<std::mutex> lock(queue_mutex);
-  queue.push(std::move(job));
+  queue.push(job);
 }
 
-auto alba::JobQueue::pop_job() -> Job::UniquePtr
+auto alba::JobQueue::pop_job() -> Job::SharedPtr
 {
   std::unique_lock<std::mutex> lock(queue_mutex);
   if (queue.empty()) {
     return nullptr;
   }
 
-  Job::UniquePtr job = std::move(queue.front());
+  Job::SharedPtr job = queue.front();
   queue.pop();
 
   return job;

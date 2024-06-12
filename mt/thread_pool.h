@@ -15,7 +15,7 @@ namespace alba {
     ThreadPool& operator=(const ThreadPool& other) = delete;
     ThreadPool& operator=(ThreadPool&& other) = delete;
 
-    void submit_job(Job::UniquePtr job);
+    void submit_job(const Job::SharedPtr& job);
     void wait_for_jobs();
 
   private:

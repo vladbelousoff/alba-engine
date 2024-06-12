@@ -8,10 +8,20 @@
 
 namespace alba {
 
+  struct IJob
+  {
+    virtual void execute() = 0;
+  };
+
+  class JobQueue;
+
   class Job
+      : IJob
+      , public std::enable_shared_from_this<Job>
   {
   public:
-    using UniquePtr = std::unique_ptr<Job>;
+    using SharedPtr = std::shared_ptr<Job>;
+    using WeakPtr = std::weak_ptr<Job>;
 
   public:
     explicit Job(StringID name);
@@ -23,11 +33,16 @@ namespace alba {
     Job& operator=(Job&& other) = delete;
 
     auto get_name() const -> StringID;
-
-    virtual void execute() = 0;
+    bool is_done() const;
+    bool is_ready_to_run() const;
+    void run(JobQueue* job_queue);
+    void add_dependency(const SharedPtr& dependency);
 
   protected:
     StringID name;
+    std::atomic_bool flag_done;
+    std::vector<WeakPtr> dependencies;
+    std::vector<WeakPtr> dependants;
   };
 
 } // namespace alba

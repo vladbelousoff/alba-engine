@@ -11,12 +11,12 @@ namespace alba {
   class JobQueue
   {
   public:
-    void push_job(Job::UniquePtr job);
-    auto pop_job() -> Job::UniquePtr;
+    void push_job(const Job::SharedPtr& job);
+    auto pop_job() -> Job::SharedPtr;
     bool is_empty();
 
   private:
-    std::queue<Job::UniquePtr> queue;
+    std::queue<Job::SharedPtr> queue;
     std::mutex queue_mutex;
   };
 

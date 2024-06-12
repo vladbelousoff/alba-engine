@@ -10,10 +10,10 @@ alba::WorkerThread::WorkerThread(alba::JobQueue& queue, std::size_t number)
 void alba::WorkerThread::run()
 {
   while (!stop_flag) {
-    Job::UniquePtr job = job_queue.pop_job();
-    if (job) {
+    Job::SharedPtr job = job_queue.pop_job();
+    if (job && job->is_ready_to_run()) {
       spdlog::info("Job {} is executing on worker thread {}", job->get_name(), number);
-      job->execute();
+      job->run(&job_queue);
     }
   }
 }

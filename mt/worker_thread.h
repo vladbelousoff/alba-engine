@@ -14,8 +14,10 @@ namespace alba {
   public:
     explicit WorkerThread(alba::JobQueue& queue, std::size_t number);
 
-    void run();
     void stop();
+
+  private:
+    void run();
 
   private:
     JobQueue& job_queue;
