@@ -18,7 +18,6 @@ alba::ThreadPool::~ThreadPool()
 
 void alba::ThreadPool::submit_job(const Job::SharedPtr& job)
 {
-  job->flag_done = false;
   job_queue.push_job(job);
 }
 
