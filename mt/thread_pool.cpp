@@ -18,13 +18,14 @@ alba::ThreadPool::~ThreadPool()
 
 void alba::ThreadPool::submit_job(const Job::SharedPtr& job)
 {
+  job->flag_done = false;
   job_queue.push_job(job);
 }
 
 void alba::ThreadPool::wait_for_jobs()
 {
-  while (!job_queue.is_empty()) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(5));
+  while (!job_queue.all_jobs_done()) {
+    std::this_thread::yield();
   }
 }
 

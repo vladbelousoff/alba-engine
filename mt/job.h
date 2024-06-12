@@ -8,17 +8,12 @@
 
 namespace alba {
 
-  struct IJob
-  {
-    virtual void execute() = 0;
-  };
-
   class JobQueue;
 
-  class Job
-      : IJob
-      , public std::enable_shared_from_this<Job>
+  class Job : public std::enable_shared_from_this<Job>
   {
+    friend class ThreadPool;
+
   public:
     using SharedPtr = std::shared_ptr<Job>;
     using WeakPtr = std::weak_ptr<Job>;
@@ -37,6 +32,9 @@ namespace alba {
     bool is_ready_to_run() const;
     void run(JobQueue* job_queue);
     void add_dependency(const SharedPtr& dependency);
+
+  protected:
+    virtual void execute() = 0;
 
   protected:
     StringID name;

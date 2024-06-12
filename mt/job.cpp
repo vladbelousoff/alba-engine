@@ -22,6 +22,7 @@ void alba::Job::run(JobQueue* job_queue)
 {
   execute();
   flag_done = true;
+  job_queue->mark_job_as_done(this);
   for (auto& dependant : dependants) {
     job_queue->push_job(dependant.lock());
   }

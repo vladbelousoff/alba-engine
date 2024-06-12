@@ -3,6 +3,7 @@
 #include <memory>
 #include <mutex>
 #include <queue>
+#include <unordered_set>
 
 #include "job.h"
 
@@ -13,11 +14,15 @@ namespace alba {
   public:
     void push_job(const Job::SharedPtr& job);
     auto pop_job() -> Job::SharedPtr;
-    bool is_empty();
+    void mark_job_as_done(Job* job);
+    bool all_jobs_done();
 
   private:
-    std::queue<Job::SharedPtr> queue;
     std::mutex queue_mutex;
+    std::queue<Job::SharedPtr> queue;
+    std::shared_mutex jobs_mutex;
+    std::unordered_set<Job*> jobs_submitted;
+    std::unordered_set<Job*> jobs_done;
   };
 
 } // namespace alba
