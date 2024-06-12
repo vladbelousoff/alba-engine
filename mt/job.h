@@ -19,6 +19,7 @@ namespace alba {
     using WeakPtr = std::weak_ptr<Job>;
 
   public:
+    explicit Job();
     explicit Job(StringID name);
     virtual ~Job() = default;
 

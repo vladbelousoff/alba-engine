@@ -1,9 +1,14 @@
 #include "job.h"
 #include "job_queue.h"
 
+alba::Job::Job()
+    : flag_done{ false }
+{
+}
+
 alba::Job::Job(alba::StringID name)
-    : name{ name }
-    , flag_done{ false }
+    : flag_done{ false }
+    , name{ name }
 {
 }
 
