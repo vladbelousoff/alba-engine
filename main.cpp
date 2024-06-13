@@ -223,6 +223,26 @@ int main(int argc, char* argv[])
 
   alba::ThreadPool thread_pool{ 4 };
 
+  class DefaultJob : public alba::Job
+  {
+  public:
+    explicit DefaultJob(alba::StringID name)
+        : alba::Job(name)
+    {
+    }
+
+    void execute() override
+    {
+    }
+  };
+
+  alba::Job::SharedPtr job1 = std::make_shared<DefaultJob>(alba::StringID{ "1" });
+  alba::Job::SharedPtr job2 = std::make_shared<DefaultJob>(alba::StringID{ "2" });
+  alba::Job::SharedPtr job3 = std::make_shared<DefaultJob>(alba::StringID{ "3" });
+
+  job1->add_dependency(job2);
+  job2->add_dependency(job3);
+
   while (!glfwWindowShouldClose(window)) {
     const auto current_time = glfwGetTime();
     delta_time = (float)(current_time - last_time);
@@ -232,6 +252,10 @@ int main(int argc, char* argv[])
 
     // Reset jobs before launching
     thread_pool.reset();
+
+    thread_pool.submit_job(job1);
+    thread_pool.submit_job(job2);
+    thread_pool.submit_job(job3);
 
     // Wait for all jobs to be done
     thread_pool.wait_for_jobs();
