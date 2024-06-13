@@ -250,15 +250,13 @@ int main(int argc, char* argv[])
 
     glfwPollEvents();
 
-    // Reset jobs before launching
-    thread_pool.reset();
-
     thread_pool.submit_job(job1);
     thread_pool.submit_job(job2);
     thread_pool.submit_job(job3);
 
     // Wait for all jobs to be done
     thread_pool.wait_for_jobs();
+    thread_pool.reset();
 
     float x = camera.distance_to_origin * glm::sin(camera.phi) * glm::cos(camera.theta);
     float y = camera.distance_to_origin * glm::cos(camera.phi);
