@@ -17,6 +17,7 @@ namespace alba {
 
     void submit_job(const Job::SharedPtr& job);
     void wait_for_jobs();
+    void reset();
 
   private:
     std::vector<WorkerThread::UniquePtr> workers;

@@ -28,6 +28,11 @@ void alba::ThreadPool::wait_for_jobs()
   }
 }
 
+void alba::ThreadPool::reset()
+{
+  job_queue.reset();
+}
+
 TEST(ThreadPool, BasicCounter)
 {
   class DefaultJob : public alba::Job

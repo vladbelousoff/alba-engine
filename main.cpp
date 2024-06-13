@@ -10,6 +10,7 @@
 #include <imgui_impl_opengl3.h>
 #include <spdlog/spdlog.h>
 
+#include "mt/thread_pool.h"
 #include "shader.h"
 
 namespace alba {
@@ -220,12 +221,20 @@ int main(int argc, char* argv[])
   auto transform = glm::mat4(1.0f);
   auto last_time = glfwGetTime();
 
+  alba::ThreadPool thread_pool{ 4 };
+
   while (!glfwWindowShouldClose(window)) {
     const auto current_time = glfwGetTime();
     delta_time = (float)(current_time - last_time);
     last_time = current_time;
 
     glfwPollEvents();
+
+    // Reset jobs before launching
+    thread_pool.reset();
+
+    // Wait for all jobs to be done
+    thread_pool.wait_for_jobs();
 
     float x = camera.distance_to_origin * glm::sin(camera.phi) * glm::cos(camera.theta);
     float y = camera.distance_to_origin * glm::cos(camera.phi);
@@ -264,7 +273,9 @@ int main(int argc, char* argv[])
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::Begin("Settings");
+    ImGui::Begin("Alba");
+    ImGui::Text("Frame Time: %.3f", delta_time);
+    ImGui::Text("FPS: %.0f", delta_time != 0.f ? 1.f / delta_time : 0.f);
     ImGui::Text("Background Color");
     ImGui::SliderFloat("Red", &bg_color_red, 0.0f, 1.0f);
     ImGui::SliderFloat("Green", &bg_color_green, 0.0f, 1.0f);

@@ -37,3 +37,13 @@ bool alba::JobQueue::all_jobs_done()
   std::shared_lock<std::shared_mutex> lock(jobs_mutex);
   return jobs_done.size() == jobs_submitted.size();
 }
+
+void alba::JobQueue::reset()
+{
+  for (auto* job : jobs_submitted) {
+    job->reset();
+  }
+
+  jobs_done.clear();
+  jobs_submitted.clear();
+}

@@ -50,3 +50,8 @@ bool alba::Job::is_ready_to_run() const
   });
 }
 
+void alba::Job::reset()
+{
+  flag_done = false;
+}
+

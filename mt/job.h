@@ -33,6 +33,7 @@ namespace alba {
     bool is_ready_to_run() const;
     void run(JobQueue* job_queue);
     void add_dependency(const SharedPtr& dependency);
+    void reset();
 
   protected:
     virtual void execute() = 0;

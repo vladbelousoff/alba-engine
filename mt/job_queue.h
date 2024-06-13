@@ -16,6 +16,7 @@ namespace alba {
     auto pop_job() -> Job::SharedPtr;
     void mark_job_as_done(Job* job);
     bool all_jobs_done();
+    void reset();
 
   private:
     std::mutex queue_mutex;
