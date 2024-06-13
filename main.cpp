@@ -250,8 +250,6 @@ int main(int argc, char* argv[])
 
     glfwPollEvents();
 
-    thread_pool.submit_job(job1);
-    thread_pool.submit_job(job2);
     thread_pool.submit_job(job3);
 
     // Wait for all jobs to be done
