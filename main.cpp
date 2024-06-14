@@ -12,6 +12,7 @@
 
 #include "mt/thread_pool.h"
 #include "shader.h"
+#include "time/scope_timer.h"
 
 namespace alba {
   static void handle_glfw_error(int error, const char* description)
@@ -165,7 +166,7 @@ int main(int argc, char* argv[])
   glfwMakeContextCurrent(window);
 
   // VSYNC
-  // glfwSwapInterval(1);
+  glfwSwapInterval(1);
 
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
@@ -233,7 +234,6 @@ int main(int argc, char* argv[])
   alba::ShaderManager::set_uniform(prog, alba::StringID{ "u_projection" }, proj);
 
   auto transform = glm::mat4(1.0f);
-  auto last_time = glfwGetTime();
 
   alba::ThreadPool thread_pool{ 4 };
 
@@ -258,12 +258,10 @@ int main(int argc, char* argv[])
   job2->add_dependency(job3);
 
   while (!glfwWindowShouldClose(window)) {
-    const auto current_time = glfwGetTime();
-    alba::global::delta_time = (float)(current_time - last_time);
-    last_time = current_time;
+    alba::ScopeTimer scope_timer{ alba::global::delta_time };
 
-    glfwPollEvents();
-
+    thread_pool.submit_job(job1);
+    thread_pool.submit_job(job2);
     thread_pool.submit_job(job3);
 
     // Wait for all jobs to be done
@@ -291,9 +289,9 @@ int main(int argc, char* argv[])
     alba::ShaderManager::use_program(prog);
     glBindVertexArray(vao);
 
-    alba::ShaderManager::set_uniform(prog, alba::StringID{ "u_time" }, (float)current_time);
+    alba::ShaderManager::set_uniform(prog, alba::StringID{ "u_time" }, (float)scope_timer.get_start());
 
-    const auto model_y = (float)glm::sin(current_time);
+    const auto model_y = (float)glm::sin(scope_timer.get_start());
     auto new_transform = glm::translate(transform, glm::vec3(0.f, model_y, 0.f));
     alba::ShaderManager::set_uniform(prog, alba::StringID{ "u_model" }, new_transform);
 
@@ -324,6 +322,7 @@ int main(int argc, char* argv[])
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     glfwSwapBuffers(window);
+    glfwPollEvents();
   }
 
   glfwTerminate();
