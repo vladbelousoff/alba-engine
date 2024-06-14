@@ -151,7 +151,7 @@ int main(int argc, char* argv[])
   glfwMakeContextCurrent(window);
 
   // VSYNC
-  glfwSwapInterval(1);
+  // glfwSwapInterval(1);
 
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
