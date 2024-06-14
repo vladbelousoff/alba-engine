@@ -40,8 +40,8 @@ bool alba::JobQueue::all_jobs_done()
 
 void alba::JobQueue::reset()
 {
-  std::shared_lock<std::shared_mutex> lock(jobs_mutex);
-  
+  std::unique_lock<std::shared_mutex> lock(jobs_mutex);
+
   for (auto* job : jobs_submitted) {
     job->reset();
   }
