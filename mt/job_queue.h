@@ -15,13 +15,14 @@ namespace alba {
     void push_job(const Job::SharedPtr& job);
     auto pop_job() -> Job::SharedPtr;
     void mark_job_as_done(Job* job);
-    bool all_jobs_done();
+    void wait_all();
     void reset();
 
   private:
     std::mutex queue_mutex;
     std::queue<Job::SharedPtr> queue;
-    std::shared_mutex jobs_mutex;
+    std::mutex jobs_mutex;
+    std::condition_variable jobs_condition;
     std::unordered_set<Job*> jobs_submitted;
     std::unordered_set<Job*> jobs_done;
   };

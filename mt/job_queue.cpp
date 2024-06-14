@@ -8,7 +8,7 @@ void alba::JobQueue::push_job(const Job::SharedPtr& job)
   }
 
   {
-    std::unique_lock<std::shared_mutex> lock(jobs_mutex);
+    std::unique_lock<std::mutex> lock(jobs_mutex);
     jobs_submitted.insert(job.get());
   }
 }
@@ -28,19 +28,22 @@ auto alba::JobQueue::pop_job() -> Job::SharedPtr
 
 void alba::JobQueue::mark_job_as_done(alba::Job* job)
 {
-  std::unique_lock<std::shared_mutex> lock(jobs_mutex);
+  std::unique_lock<std::mutex> lock(jobs_mutex);
   jobs_done.insert(job);
+  jobs_condition.notify_one();
 }
 
-bool alba::JobQueue::all_jobs_done()
+void alba::JobQueue::wait_all()
 {
-  std::shared_lock<std::shared_mutex> lock(jobs_mutex);
-  return jobs_done.size() == jobs_submitted.size();
+  std::unique_lock<std::mutex> lock(jobs_mutex);
+  jobs_condition.wait(lock, [this]() {
+    return jobs_done.size() == jobs_submitted.size();
+  });
 }
 
 void alba::JobQueue::reset()
 {
-  std::unique_lock<std::shared_mutex> lock(jobs_mutex);
+  std::unique_lock<std::mutex> lock(jobs_mutex);
 
   for (auto* job : jobs_submitted) {
     job->reset();

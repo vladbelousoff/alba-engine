@@ -21,11 +21,9 @@ void alba::ThreadPool::submit_job(const Job::SharedPtr& job)
   job_queue.push_job(job);
 }
 
-void alba::ThreadPool::wait_for_jobs()
+void alba::ThreadPool::wait_all()
 {
-  while (!job_queue.all_jobs_done()) {
-    std::this_thread::yield();
-  }
+  job_queue.wait_all();
 }
 
 void alba::ThreadPool::reset()
@@ -61,7 +59,7 @@ TEST(ThreadPool, BasicCounter)
     thread_pool.submit_job(job);
   }
 
-  thread_pool.wait_for_jobs();
+  thread_pool.wait_all();
   EXPECT_EQ(counter.load(), 1'000);
 }
 
@@ -115,7 +113,7 @@ TEST(ThreadPool, Dependencies)
     thread_pool.submit_job(jobs[i]);
   }
 
-  thread_pool.wait_for_jobs();
+  thread_pool.wait_all();
   EXPECT_EQ(names.size(), 10);
 
   // Checks for proper dependency handling

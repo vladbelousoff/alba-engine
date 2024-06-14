@@ -265,7 +265,7 @@ int main(int argc, char* argv[])
     thread_pool.submit_job(job3);
 
     // Wait for all jobs to be done
-    thread_pool.wait_for_jobs();
+    thread_pool.wait_all();
     thread_pool.reset();
 
     float x = camera.distance_to_origin * glm::sin(camera.phi) * glm::cos(camera.theta);
