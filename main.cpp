@@ -94,7 +94,21 @@ namespace alba {
 
 } // namespace alba
 
-float delta_time = 0.f;
+namespace alba {
+  namespace global {
+    static float delta_time = 0.f;
+  }
+
+  auto get_delta_time() -> float
+  {
+    return global::delta_time;
+  }
+
+  auto get_fps() -> float
+  {
+    return global::delta_time != 0.f ? 1.f / global::delta_time : 0.f;
+  }
+} // namespace alba
 
 struct
 {
@@ -245,7 +259,7 @@ int main(int argc, char* argv[])
 
   while (!glfwWindowShouldClose(window)) {
     const auto current_time = glfwGetTime();
-    delta_time = (float)(current_time - last_time);
+    alba::global::delta_time = (float)(current_time - last_time);
     last_time = current_time;
 
     glfwPollEvents();
@@ -294,8 +308,8 @@ int main(int argc, char* argv[])
     ImGui::NewFrame();
 
     ImGui::Begin("Alba");
-    ImGui::Text("Frame Time: %.3f", delta_time);
-    ImGui::Text("FPS: %.0f", delta_time != 0.f ? 1.f / delta_time : 0.f);
+    ImGui::Text("Frame: %.3fms", alba::get_delta_time() * 1000.f);
+    ImGui::Text("FPS: %.0f", alba::get_fps());
     ImGui::Text("Background Color");
     ImGui::SliderFloat("Red", &bg_color_red, 0.0f, 1.0f);
     ImGui::SliderFloat("Green", &bg_color_green, 0.0f, 1.0f);
