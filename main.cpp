@@ -26,8 +26,7 @@ namespace alba {
   static std::string default_shader_vert =
       "#version 330 core\n"
       "layout (location = 0) in vec3 a_position;\n"
-      "layout (location = 1) in vec3 a_color;\n"
-      "layout (location = 2) in vec2 a_texcoord;\n"
+      "layout (location = 1) in vec2 a_texcoord;\n"
       "uniform mat4 u_model;\n"
       "uniform mat4 u_view;\n"
       "uniform mat4 u_projection;\n"
@@ -35,32 +34,35 @@ namespace alba {
       "out vec2 texcoord;\n"
       "void main() {\n"
       "  gl_Position = u_projection * u_view * u_model * vec4(a_position, 1.0f);\n"
-      "  color = a_color;\n"
       "  texcoord = a_texcoord;\n"
       "}\n";
 
   static std::string default_shader_frag =
       "#version 330 core\n"
       "out vec4 frag_color;\n"
-      "in vec3 color;\n"
       "in vec2 texcoord;\n"
       "uniform sampler2D u_texture;\n"
       "void main() {\n"
       "  frag_color = texture(u_texture, texcoord);\n"
       "}\n";
 
-  static float vertices[] = {
-    // positions // colors // texture coords
-    0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   // top right
-    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // bottom right
-    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
-    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f   // top left
-  };
+  float vertices[] = { -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.5f, 0.5f, -0.5f, 1.0f, 1.0f, -0.5f, 0.5f, -0.5f, 0.0f,
+    1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
 
-  unsigned int indices[] = {
-    0, 1, 3, // first triangle
-    1, 2, 3  // second triangle
-  };
+    -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 0.5f, 0.5f, 0.5f, 1.0f, 1.0f, -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, -0.5f, -0.5f, 0.5f,
+    0.0f, 0.0f,
+
+    -0.5f, 0.5f, 0.5f, 1.0f, 0.0f, -0.5f, 0.5f, -0.5f, 1.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, -0.5f, 0.5f,
+    0.5f, 1.0f, 0.0f,
+
+    0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f,
+    1.0f, 0.0f,
+
+    -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.5f, -0.5f, 0.5f, 1.0f, 0.0f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, -0.5f, -0.5f,
+    -0.5f, 0.0f, 1.0f,
+
+    -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.5f, 0.5f, 0.5f, 1.0f, 0.0f, -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, -0.5f, 0.5f, -0.5f,
+    0.0f, 1.0f };
 
 } // namespace alba
 
@@ -121,6 +123,10 @@ int main(int argc, char* argv[])
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+#ifdef __APPLE__
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
   // Set error callback
   glfwSetErrorCallback(alba::handle_glfw_error);
 
@@ -162,11 +168,9 @@ int main(int argc, char* argv[])
 
   GLuint vao;
   GLuint vbo;
-  GLuint ebo;
 
   glGenVertexArrays(1, &vao);
   glGenBuffers(1, &vbo);
-  glGenBuffers(1, &ebo);
 
   // Bind VAO
   glBindVertexArray(vao);
@@ -177,23 +181,14 @@ int main(int argc, char* argv[])
 
   // Bind VBO and copy vertices data
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  // glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(vertices.size() * sizeof(alba::Vertex)), vertices.data(), GL_STATIC_DRAW);
   glBufferData(GL_ARRAY_BUFFER, sizeof(alba::vertices), alba::vertices, GL_STATIC_DRAW);
 
-  // Bind EBO and copy indices data
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-  // glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)(indices.size() * sizeof(GLuint)), indices.data(), GL_STATIC_DRAW);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(alba::indices), alba::indices, GL_STATIC_DRAW);
-
   // position attribute
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)nullptr);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)nullptr);
   glEnableVertexAttribArray(0);
-  // color attribute
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+  // texture attribute
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
-  // texture coord attribute
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-  glEnableVertexAttribArray(2);
 
   spdlog::info("Loading textures...");
 
@@ -224,7 +219,7 @@ int main(int argc, char* argv[])
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
   glEnable(GL_DEPTH_TEST);
-  glEnable(GL_CULL_FACE);
+  // glEnable(GL_CULL_FACE);
 
   auto frag = alba::ShaderManager::create_shader(alba::default_shader_frag, alba::ShaderType::FRAG);
   auto vert = alba::ShaderManager::create_shader(alba::default_shader_vert, alba::ShaderType::VERT);
@@ -290,7 +285,7 @@ int main(int argc, char* argv[])
 
     glClearColor(bg_color_red, bg_color_green, bg_color_blue, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glCullFace(GL_BACK);
+    // glCullFace(GL_BACK);
 
     // alba::ShaderManager::set_uniform(prog, alba::StringID{ "u_time" }, (float)scope_timer.get_start());
 
@@ -302,7 +297,8 @@ int main(int argc, char* argv[])
     glBindTexture(GL_TEXTURE_2D, texture);
 
     glBindVertexArray(vao);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     // glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
