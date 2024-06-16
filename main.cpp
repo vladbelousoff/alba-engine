@@ -85,8 +85,8 @@ namespace alba {
 
 struct
 {
-  float distance_to_origin{ 5.6f };
-  float phi{ 4.2f }, theta{ 1.7f };
+  float distance_to_origin{ 6.7f };
+  float phi{ 5.182f }, theta{ 5.716f };
 } camera;
 
 // Function to handle key presses
@@ -202,11 +202,11 @@ int main(int argc, char* argv[])
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   // load and generate the texture
   int width, height, nr_channels;
-  std::filesystem::path texture_path = alba::global::root_path / std::filesystem::path{ "data/wall.jpg" };
+  std::filesystem::path texture_path = alba::global::root_path / std::filesystem::path{ "data/container2.png" };
   stbi_set_flip_vertically_on_load(true);
   unsigned char* data = stbi_load(texture_path.string().c_str(), &width, &height, &nr_channels, 0);
   if (data) {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data);
   } else {
