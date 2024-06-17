@@ -348,9 +348,7 @@ int main(int argc, char* argv[])
 
     ImVec2 pos = ImGui::GetCursorScreenPos();
 
-    // and here we can add our created texture as image to ImGui
-    // unfortunately we need to use the cast to void* or I didn't find another way tbh
-    ImGui::GetWindowDrawList()->AddImage((void*)texture_id, ImVec2(pos.x, pos.y), ImVec2(pos.x + region_size.x, pos.y + region_size.y), ImVec2(0, 1), ImVec2(1, 0));
+    ImGui::Image(reinterpret_cast<ImTextureID>(texture_id), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
     ImGui::End();
 
     bind_framebuffer();
