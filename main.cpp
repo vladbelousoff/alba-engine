@@ -234,6 +234,59 @@ int main(int argc, char* argv[])
 
   auto transform = glm::mat4(1.0f);
 
+  GLuint FBO;        // frame buffer object
+  GLuint RBO;        // rendering buffer object
+  GLuint texture_id; // the texture id we'll need later to create a texture
+
+  auto create_framebuffer = [&]() {
+    glGenFramebuffers(1, &FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+    int width;
+    int height;
+    glfwGetWindowSize(window, &width, &height);
+
+    glGenTextures(1, &texture_id);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_id, 0);
+
+    glGenRenderbuffers(1, &RBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+      spdlog::error("ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  };
+
+  auto rescale_framebuffer = [&](int width, int height) {
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_id, 0);
+
+    glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
+  };
+
+  auto bind_framebuffer = [&]() {
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+  };
+
+  auto unbind_framebuffer = []() {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  };
+
   alba::ThreadPool thread_pool{ 4 };
 
   class DefaultJob : public alba::Job
@@ -256,6 +309,8 @@ int main(int argc, char* argv[])
   job1->add_dependency(job2);
   job2->add_dependency(job3);
 
+  create_framebuffer();
+
   while (!glfwWindowShouldClose(window)) {
     alba::ScopeTimer scope_timer{ alba::global::delta_time };
 
@@ -274,20 +329,39 @@ int main(int argc, char* argv[])
     // Calculate view matrix
     glm::mat4 view = glm::lookAt(glm::vec3(x, y, z), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 
-    alba::ShaderManager::use_program(prog);
-
-    // Update uniform
-    alba::ShaderManager::set_uniform(prog, alba::StringID{ "u_view" }, view);
-
     static float bg_color_red = 0.144f;
     static float bg_color_green = 0.186f;
     static float bg_color_blue = 0.311f;
 
+    glClearColor(0.f, 0.f, 0.f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::Begin("Viewport");
+    ImVec2 region_size = ImGui::GetContentRegionAvail();
+    rescale_framebuffer((int)region_size.x, (int)region_size.y);
+    glViewport(0, 0, (int)region_size.x, (int)region_size.y);
+
+    ImVec2 pos = ImGui::GetCursorScreenPos();
+
+    // and here we can add our created texture as image to ImGui
+    // unfortunately we need to use the cast to void* or I didn't find another way tbh
+    ImGui::GetWindowDrawList()->AddImage((void*)texture_id, ImVec2(pos.x, pos.y), ImVec2(pos.x + region_size.x, pos.y + region_size.y), ImVec2(0, 1), ImVec2(1, 0));
+    ImGui::End();
+
+    bind_framebuffer();
+
+    // glCullFace(GL_BACK);
     glClearColor(bg_color_red, bg_color_green, bg_color_blue, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // glCullFace(GL_BACK);
 
-    // alba::ShaderManager::set_uniform(prog, alba::StringID{ "u_time" }, (float)scope_timer.get_start());
+    alba::ShaderManager::use_program(prog);
+    // Update uniform
+    alba::ShaderManager::set_uniform(prog, alba::StringID{ "u_view" }, view);
 
     const auto model_y = (float)glm::sin(scope_timer.get_start());
     auto new_transform = glm::translate(transform, glm::vec3(0.f, model_y, 0.f));
@@ -303,10 +377,7 @@ int main(int argc, char* argv[])
     // glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
 
-    // Start the Dear ImGui frame
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
+    unbind_framebuffer();
 
     ImGui::Begin("Alba");
     ImGui::Text("Frame: %.3fms", alba::get_delta_time() * 1000.f);
@@ -327,6 +398,11 @@ int main(int argc, char* argv[])
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
+
+  // some ImGui cleanups here
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
 
   glfwTerminate();
   return 0;
