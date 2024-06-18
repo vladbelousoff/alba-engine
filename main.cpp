@@ -8,6 +8,7 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <imgui_internal.h>
 #include <spdlog/spdlog.h>
 
 #include "mt/thread_pool.h"
@@ -154,6 +155,7 @@ int main(int argc, char* argv[])
   ImGuiIO& io = ImGui::GetIO();
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   constexpr const char* glsl_version = "#version 330";
