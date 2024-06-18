@@ -337,15 +337,27 @@ int main(int argc, char* argv[])
     static float bg_color_green = 0.186f;
     static float bg_color_blue = 0.311f;
 
-    glClearColor(0.f, 0.f, 0.f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // glClearColor(0.f, 0.f, 0.f, 1.0f);
+    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::Begin("Viewport");
+#ifdef IMGUI_HAS_VIEWPORT
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+    ImGui::SetNextWindowViewport(viewport->ID);
+#else
+    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+    ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+#endif
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::Begin("Main", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize);
+
+    ImGui::Begin("Viewport", nullptr);
     ImVec2 region_size = ImGui::GetContentRegionAvail();
     rescale_framebuffer((int)region_size.x, (int)region_size.y);
     glViewport(0, 0, (int)region_size.x, (int)region_size.y);
@@ -353,9 +365,15 @@ int main(int argc, char* argv[])
     ImGui::Image(reinterpret_cast<ImTextureID>(texture_id), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
     ImGui::End();
 
+    ImGui::End();
+    ImGui::PopStyleVar();
+
     bind_framebuffer();
 
     // glCullFace(GL_BACK);
+    glm::ivec2 app_size;
+    glfwGetFramebufferSize(window, &app_size.x, &app_size.y);
+    glViewport(0, 0, app_size.x, app_size.y);
     glClearColor(bg_color_red, bg_color_green, bg_color_blue, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
