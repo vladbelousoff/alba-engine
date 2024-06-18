@@ -345,29 +345,6 @@ int main(int argc, char* argv[])
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-#ifdef IMGUI_HAS_VIEWPORT
-    ImGuiViewport* viewport = ImGui::GetMainViewport();
-    ImGui::SetNextWindowPos(viewport->WorkPos);
-    ImGui::SetNextWindowSize(viewport->WorkSize);
-    ImGui::SetNextWindowViewport(viewport->ID);
-#else
-    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
-    ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
-#endif
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-    ImGui::Begin("Main", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize);
-
-    ImGui::Begin("Viewport", nullptr);
-    ImVec2 region_size = ImGui::GetContentRegionAvail();
-    rescale_framebuffer((int)region_size.x, (int)region_size.y);
-    glViewport(0, 0, (int)region_size.x, (int)region_size.y);
-
-    ImGui::Image(reinterpret_cast<ImTextureID>(texture_id), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
-    ImGui::End();
-
-    ImGui::End();
-    ImGui::PopStyleVar();
-
     bind_framebuffer();
 
     // glCullFace(GL_BACK);
@@ -397,7 +374,17 @@ int main(int argc, char* argv[])
 
     unbind_framebuffer();
 
-    ImGui::Begin("Alba");
+    glClearColor(0.f, 0.f, 0.f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    ImGui::Begin("Viewport");
+    ImVec2 region_size = ImGui::GetContentRegionAvail();
+    rescale_framebuffer((int)region_size.x, (int)region_size.y);
+    glViewport(0, 0, (int)region_size.x, (int)region_size.y);
+    ImGui::Image(reinterpret_cast<ImTextureID>(texture_id), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
+    ImGui::End();
+
+    ImGui::Begin("Settings");
     ImGui::Text("Frame: %.3fms", alba::get_delta_time() * 1000.f);
     ImGui::Text("FPS: %.0f", alba::get_fps());
     ImGui::Text("Background Color");
