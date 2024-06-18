@@ -157,9 +157,11 @@ int main(int argc, char* argv[])
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
+  // Setup Dear ImGui style
+  ImGui::StyleColorsLight();
+
   ImGui_ImplGlfw_InitForOpenGL(window, true);
-  constexpr const char* glsl_version = "#version 330";
-  ImGui_ImplOpenGL3_Init(glsl_version);
+  ImGui_ImplOpenGL3_Init("#version 330");
 
   if (glewInit()) {
     spdlog::error("Failed to initialize glew");
@@ -347,8 +349,6 @@ int main(int argc, char* argv[])
     ImVec2 region_size = ImGui::GetContentRegionAvail();
     rescale_framebuffer((int)region_size.x, (int)region_size.y);
     glViewport(0, 0, (int)region_size.x, (int)region_size.y);
-
-    ImVec2 pos = ImGui::GetCursorScreenPos();
 
     ImGui::Image(reinterpret_cast<ImTextureID>(texture_id), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
     ImGui::End();
