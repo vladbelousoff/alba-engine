@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
     return -1;
   }
 
-  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -229,11 +229,8 @@ int main(int argc, char* argv[])
   auto vert = alba::ShaderManager::create_shader(alba::default_shader_vert, alba::ShaderType::VERT);
   auto prog = alba::ShaderManager::create_program(vert, frag);
 
-  glm::mat4 proj = glm::perspective(glm::radians(45.0f), 1920.f / 1080.f, 0.1f, 100.0f);
-
   // Needed before setting uniforms
   alba::ShaderManager::use_program(prog);
-  alba::ShaderManager::set_uniform(prog, alba::StringID{ "u_projection" }, proj);
   alba::ShaderManager::set_uniform(prog, alba::StringID{ "u_texture" }, 0);
 
   auto transform = glm::mat4(1.0f);
@@ -272,6 +269,11 @@ int main(int argc, char* argv[])
   };
 
   auto rescale_framebuffer = [&](int width, int height) {
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
+
+    alba::ShaderManager::use_program(prog);
+    alba::ShaderManager::set_uniform(prog, alba::StringID{ "u_projection" }, proj);
+
     glBindTexture(GL_TEXTURE_2D, texture_id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -345,12 +347,53 @@ int main(int argc, char* argv[])
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+    glClearColor(0.f, 0.f, 0.f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    ImGui::Begin("Viewport");
+    ImVec2 region_size = ImGui::GetContentRegionAvail();
+    glViewport(0, 0, (int)region_size.x, (int)region_size.y);
+    rescale_framebuffer((int)region_size.x, (int)region_size.y);
+    ImGui::Image(reinterpret_cast<ImTextureID>(texture_id), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
+    ImGui::End();
+
+    ImGui::SameLine(); // Move to the right of the "Viewport" child window
+
+    ImGui::Begin("Settings");
+    ImGui::Text("Frame: %.3fms", alba::get_delta_time() * 1000.f);
+    ImGui::Text("FPS: %.0f", alba::get_fps());
+    ImGui::Text("Background Color");
+    ImGui::SliderFloat("Red", &bg_color_red, 0.0f, 1.0f);
+    ImGui::SliderFloat("Green", &bg_color_green, 0.0f, 1.0f);
+    ImGui::SliderFloat("Blue", &bg_color_blue, 0.0f, 1.0f);
+    ImGui::Text("Orbit Camera");
+    ImGui::SliderFloat("Phi", &camera.phi, 0.0f, glm::pi<float>() * 2.f);
+    ImGui::SliderFloat("Theta", &camera.theta, 0.0f, glm::pi<float>() * 2.f);
+    ImGui::SliderFloat("Distance", &camera.distance_to_origin, 0.0f, 100.0f);
+    ImGui::End();
+
+    if (ImGui::BeginMainMenuBar()) {
+      if (ImGui::BeginMenu("File")) {
+        if (ImGui::MenuItem("Create")) {
+        }
+        if (ImGui::MenuItem("Open", "Ctrl+O")) {
+        }
+        if (ImGui::MenuItem("Save", "Ctrl+S")) {
+        }
+        if (ImGui::MenuItem("Save as..")) {
+        }
+        ImGui::EndMenu();
+      }
+      if (ImGui::BeginMenu("Edit")) {
+        ImGui::EndMenu();
+      }
+      ImGui::EndMainMenuBar();
+    }
+
     bind_framebuffer();
 
     // glCullFace(GL_BACK);
-    glm::ivec2 app_size;
-    glfwGetFramebufferSize(window, &app_size.x, &app_size.y);
-    glViewport(0, 0, app_size.x, app_size.y);
+    glViewport(0, 0, (int)region_size.x, (int)region_size.y);
     glClearColor(bg_color_red, bg_color_green, bg_color_blue, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -373,73 +416,6 @@ int main(int argc, char* argv[])
     glBindVertexArray(0);
 
     unbind_framebuffer();
-
-    glClearColor(0.f, 0.f, 0.f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    if (ImGui::BeginMainMenuBar()) {
-      if (ImGui::BeginMenu("File")) {
-        if (ImGui::MenuItem("Create")) {
-        }
-        if (ImGui::MenuItem("Open", "Ctrl+O")) {
-        }
-        if (ImGui::MenuItem("Save", "Ctrl+S")) {
-        }
-        if (ImGui::MenuItem("Save as..")) {
-        }
-        ImGui::EndMenu();
-      }
-      if (ImGui::BeginMenu("Edit")) {
-        ImGui::EndMenu();
-      }
-      ImGui::EndMainMenuBar();
-    }
-
-#ifdef IMGUI_HAS_VIEWPORT
-    ImGuiViewport* viewport = ImGui::GetMainViewport();
-    ImGui::SetNextWindowPos(viewport->WorkPos);
-    ImGui::SetNextWindowSize(viewport->WorkSize);
-    ImGui::SetNextWindowViewport(viewport->ID);
-#else
-    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
-    ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
-#endif
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-    ImGui::Begin("Main", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize);
-
-    // Calculate the region available for the child windows
-    ImVec2 main_window_size = ImGui::GetContentRegionAvail();
-    ImVec2 window_padding = ImGui::GetStyle().WindowPadding;
-    float item_spacing = ImGui::GetStyle().ItemSpacing.x;
-
-    // Adjust the sizes considering padding and spacing
-    float left_pane_width = (main_window_size.x - item_spacing) * 0.7f; // Adjust the ratio as needed
-    float right_pane_width = main_window_size.x - left_pane_width - item_spacing;
-
-    ImGui::BeginChild("Viewport", ImVec2(left_pane_width, main_window_size.y - 2 * window_padding.y), true);
-    ImVec2 region_size = ImGui::GetContentRegionAvail();
-    glViewport(0, 0, (int)region_size.x, (int)region_size.y);
-    rescale_framebuffer((int)region_size.x, (int)region_size.y);
-    ImGui::Image(reinterpret_cast<ImTextureID>(texture_id), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
-    ImGui::EndChild();
-
-    ImGui::SameLine(); // Move to the right of the "Viewport" child window
-
-    ImGui::BeginChild("Settings", ImVec2(right_pane_width, main_window_size.y - 2 * window_padding.y), true);
-    ImGui::Text("Frame: %.3fms", alba::get_delta_time() * 1000.f);
-    ImGui::Text("FPS: %.0f", alba::get_fps());
-    ImGui::Text("Background Color");
-    ImGui::SliderFloat("Red", &bg_color_red, 0.0f, 1.0f);
-    ImGui::SliderFloat("Green", &bg_color_green, 0.0f, 1.0f);
-    ImGui::SliderFloat("Blue", &bg_color_blue, 0.0f, 1.0f);
-    ImGui::Text("Orbit Camera");
-    ImGui::SliderFloat("Phi", &camera.phi, 0.0f, glm::pi<float>() * 2.f);
-    ImGui::SliderFloat("Theta", &camera.theta, 0.0f, glm::pi<float>() * 2.f);
-    ImGui::SliderFloat("Distance", &camera.distance_to_origin, 0.0f, 100.0f);
-    ImGui::EndChild();
-
-    ImGui::End();
-    ImGui::PopStyleVar();
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
