@@ -54,17 +54,19 @@ auto alba::ShaderManager::create_program(alba::ShaderHandle vert, alba::ShaderHa
   return handle;
 }
 
-auto alba::ShaderManager::use_program(alba::ProgramHandle handle) -> void
+auto alba::ShaderManager::use_program(alba::ProgramHandle handle, const std::function<void(const UniformManager& manager)>& callback) -> void
 {
   glUseProgram(handle.id);
+  callback(UniformManager{ handle });
+  glUseProgram(0);
 }
 
-auto alba::ShaderManager::set_uniform(ProgramHandle handle, StringID name, float value) -> void
+auto alba::UniformManager::set_uniform(alba::StringID name, float value) const -> void
 {
   glUniform1f(glGetUniformLocation(handle.id, name.to_string().c_str()), value);
 }
 
-auto alba::ShaderManager::set_uniform(alba::ProgramHandle handle, alba::StringID name, const glm::mat4& mat) -> void
+auto alba::UniformManager::set_uniform(alba::StringID name, const glm::mat4& mat) const -> void
 {
   glUniformMatrix4fv(glGetUniformLocation(handle.id, name.to_string().c_str()), 1, GL_FALSE, glm::value_ptr(mat));
 }

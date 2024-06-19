@@ -229,9 +229,9 @@ int main(int argc, char* argv[])
   auto vert = alba::ShaderManager::create_shader(alba::default_shader_vert, alba::ShaderType::VERT);
   auto prog = alba::ShaderManager::create_program(vert, frag);
 
-  // Needed before setting uniforms
-  alba::ShaderManager::use_program(prog);
-  alba::ShaderManager::set_uniform(prog, alba::StringID{ "u_texture" }, 0);
+  alba::ShaderManager::use_program(prog, [&](const alba::UniformManager& manager) {
+    manager.set_uniform(alba::StringID{ "u_texture" }, 0);
+  });
 
   auto transform = glm::mat4(1.0f);
 
@@ -271,8 +271,9 @@ int main(int argc, char* argv[])
   auto rescale_framebuffer = [&](int width, int height) {
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
 
-    alba::ShaderManager::use_program(prog);
-    alba::ShaderManager::set_uniform(prog, alba::StringID{ "u_projection" }, proj);
+    alba::ShaderManager::use_program(prog, [&](const alba::UniformManager& manager) {
+      manager.set_uniform(alba::StringID{ "u_projection" }, proj);
+    });
 
     glBindTexture(GL_TEXTURE_2D, texture_id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
@@ -397,23 +398,20 @@ int main(int argc, char* argv[])
     glClearColor(bg_color_red, bg_color_green, bg_color_blue, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    alba::ShaderManager::use_program(prog);
-    // Update uniform
-    alba::ShaderManager::set_uniform(prog, alba::StringID{ "u_view" }, view);
-
     const auto model_y = (float)glm::sin(scope_timer.get_start());
     auto new_transform = glm::translate(transform, glm::vec3(0.f, model_y, 0.f));
-    alba::ShaderManager::set_uniform(prog, alba::StringID{ "u_model" }, new_transform);
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    alba::ShaderManager::use_program(prog, [&](const alba::UniformManager& manager) {
+      manager.set_uniform(alba::StringID{ "u_view" }, view);
+      manager.set_uniform(alba::StringID{ "u_model" }, new_transform);
 
-    glBindVertexArray(vao);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    // glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, nullptr);
-    glBindVertexArray(0);
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, texture);
+
+      glBindVertexArray(vao);
+      glDrawArrays(GL_TRIANGLES, 0, 36);
+      glBindVertexArray(0);
+    });
 
     unbind_framebuffer();
 
