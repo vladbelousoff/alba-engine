@@ -17,6 +17,8 @@ dependencies = [
 
 sources = [
     'main.cpp',
+    'engine/engine_application.cpp',
+    'project/project_application.cpp',
     'shader.cpp',
     'string_manager.cpp',
     'mt/spin_lock.cpp',
