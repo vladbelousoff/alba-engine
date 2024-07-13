@@ -14,6 +14,7 @@ dependencies = [
     dependency('gtest'),
     dependency('cli11'),
     dependency('mimalloc'),
+    dependency('eastl'),
 ]
 
 sources = [

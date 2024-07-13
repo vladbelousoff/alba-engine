@@ -7,6 +7,16 @@
 
 #include "project/project_application.h"
 
+void* operator new[](size_t size, const char*, int, unsigned, const char*, int)
+{
+  return mi_malloc(size);
+}
+
+void* operator new[](size_t size, size_t alignment, size_t alignment_offset, const char*, int, unsigned, const char*, int)
+{
+  return mi_malloc_aligned_at(size, alignment, alignment_offset);
+}
+
 int main(int argc, char* argv[])
 {
   CLI::App app{ "Alba Engine" };
