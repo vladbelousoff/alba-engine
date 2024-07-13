@@ -13,6 +13,7 @@ dependencies = [
     dependency('spdlog'),
     dependency('gtest'),
     dependency('cli11'),
+    dependency('mimalloc'),
 ]
 
 sources = [

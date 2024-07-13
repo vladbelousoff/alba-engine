@@ -1,3 +1,5 @@
+#include <mimalloc-new-delete.h>
+
 #include <CLI/CLI.hpp>
 #include <glm/glm.hpp>
 #include <gtest/gtest.h>
