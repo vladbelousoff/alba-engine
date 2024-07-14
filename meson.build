@@ -24,14 +24,6 @@ sources = [
     'project/project_application.cpp',
     'shader.cpp',
     'string_manager.cpp',
-    'mt/spin_lock.cpp',
-    'mt/job.cpp',
-    'mt/job_queue.cpp',
-    'mt/worker_thread.cpp',
-    'mt/thread_pool.cpp',
-    'ecs/world.cpp',
-    'ecs/component.cpp',
-    'ecs/archetype.cpp',
 ]
 
 executable('loki', sources,
