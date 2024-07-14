@@ -15,6 +15,7 @@ dependencies = [
     dependency('cli11'),
     dependency('mimalloc'),
     dependency('eastl'),
+    dependency('stormlib'),
 ]
 
 sources = [
