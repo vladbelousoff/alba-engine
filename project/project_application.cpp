@@ -3,7 +3,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "imgui.h"
-#include "shader.h"
+#include "engine/render/shader.h"
 #include "spdlog/spdlog.h"
 
 #define STB_IMAGE_IMPLEMENTATION

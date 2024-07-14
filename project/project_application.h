@@ -3,7 +3,7 @@
 #include "engine/engine_application.h"
 #include "glm/detail/type_mat4x4.hpp"
 #include "glm/vec3.hpp"
-#include "shader.h"
+#include "engine/render/shader.h"
 
 class ProjectApplication : public loki::EngineApplication
 {

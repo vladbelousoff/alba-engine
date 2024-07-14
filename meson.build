@@ -19,11 +19,11 @@ dependencies = [
 ]
 
 sources = [
-    'main.cpp',
+    'engine/main.cpp',
     'engine/engine_application.cpp',
+    'engine/string_manager.cpp',
+    'engine/render/shader.cpp',
     'project/project_application.cpp',
-    'shader.cpp',
-    'string_manager.cpp',
 ]
 
 executable('loki', sources,

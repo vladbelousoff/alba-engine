@@ -5,7 +5,7 @@
 #include <string>
 
 #include "glm/fwd.hpp"
-#include "string_manager.h"
+#include "engine/string_manager.h"
 
 namespace loki {
 
