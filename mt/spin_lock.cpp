@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include <thread>
 
-void alba::SpinLock::backoff() const
+void loki::SpinLock::backoff() const
 {
   const int max_retries = 8;
   if (retries < max_retries) {
@@ -14,7 +14,7 @@ void alba::SpinLock::backoff() const
   }
 }
 
-void alba::SpinLock::acquire()
+void loki::SpinLock::acquire()
 {
   retries = 0;
   while (flag.test_and_set(std::memory_order_acquire)) {
@@ -24,14 +24,14 @@ void alba::SpinLock::acquire()
   }
 }
 
-void alba::SpinLock::release()
+void loki::SpinLock::release()
 {
   flag.clear(std::memory_order_release);
 }
 
 TEST(SpinLock, Basic)
 {
-  alba::SpinLock lock;
+  loki::SpinLock lock;
 
   auto increment_counter = [&lock](int& counter, int operations) {
     for (int i = 0; i < operations; i++) {

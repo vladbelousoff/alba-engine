@@ -5,14 +5,14 @@
 #include "spdlog/spdlog.h"
 #include "time/scope_timer.h"
 
-alba::EngineApplication::~EngineApplication()
+loki::EngineApplication::~EngineApplication()
 {
   if (window) {
     term();
   }
 }
 
-auto alba::EngineApplication::launch(const std::shared_ptr<EngineSettings>& _settings) -> int
+auto loki::EngineApplication::launch(const std::shared_ptr<EngineSettings>& _settings) -> int
 {
   settings = _settings;
 
@@ -29,7 +29,7 @@ auto alba::EngineApplication::launch(const std::shared_ptr<EngineSettings>& _set
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
   while (!glfwWindowShouldClose(window)) {
-    alba::ScopeTimer scope_timer{ delta_time };
+    loki::ScopeTimer scope_timer{ delta_time };
 
     // Main update
     update();
@@ -55,7 +55,7 @@ auto alba::EngineApplication::launch(const std::shared_ptr<EngineSettings>& _set
   return 0;
 }
 
-bool alba::EngineApplication::init()
+bool loki::EngineApplication::init()
 {
   if (!glfwInit()) {
     spdlog::error("Failed to initialize GLFW!");
@@ -77,7 +77,7 @@ bool alba::EngineApplication::init()
   });
 
   // Create a windowed mode window and its OpenGL context
-  window = glfwCreateWindow(1'920, 1'080, "Alba Engine", nullptr, nullptr);
+  window = glfwCreateWindow(1'920, 1'080, "Loki Engine", nullptr, nullptr);
   if (!window) {
     spdlog::error("Failed to create GLFW window!");
     glfwTerminate();
@@ -113,7 +113,7 @@ bool alba::EngineApplication::init()
   return true;
 }
 
-void alba::EngineApplication::term()
+void loki::EngineApplication::term()
 {
   // Some ImGui cleanups here
   ImGui_ImplOpenGL3_Shutdown();

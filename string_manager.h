@@ -8,7 +8,7 @@
 #include <thread>
 #include <unordered_map>
 
-namespace alba {
+namespace loki {
 
   class StringManager;
 
@@ -46,19 +46,19 @@ namespace alba {
     static std::unordered_map<std::string, StringID> string_to_id;
   };
 
-} // namespace alba
+} // namespace loki
 
-template <> struct std::hash<alba::StringID>
+template <> struct std::hash<loki::StringID>
 {
-  std::size_t operator()(const alba::StringID& string) const
+  std::size_t operator()(const loki::StringID& string) const
   {
     return hash<std::size_t>{}(string.id);
   }
 };
 
-template <> struct fmt::formatter<alba::StringID> : formatter<std::string>
+template <> struct fmt::formatter<loki::StringID> : formatter<std::string>
 {
-  auto format(alba::StringID type, format_context& ctx)
+  auto format(loki::StringID type, format_context& ctx)
   {
     return formatter<std::string>::format(type.to_string(), ctx);
   }

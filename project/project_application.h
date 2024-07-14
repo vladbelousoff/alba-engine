@@ -5,7 +5,7 @@
 #include "glm/vec3.hpp"
 #include "shader.h"
 
-class ProjectApplication : public alba::EngineApplication
+class ProjectApplication : public loki::EngineApplication
 {
 protected:
   void post_init() override;
@@ -18,7 +18,7 @@ private:
   std::uint32_t vao{};
   std::uint32_t vbo{};
   std::uint32_t texture{};
-  alba::ProgramHandle program{};
+  loki::ProgramHandle program{};
   glm::mat4 model{ 1.f };
   glm::mat4 view{};
   glm::mat4 projection{};

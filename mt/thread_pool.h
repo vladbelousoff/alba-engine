@@ -2,7 +2,7 @@
 
 #include "worker_thread.h"
 
-namespace alba {
+namespace loki {
 
   class ThreadPool
   {
@@ -24,4 +24,4 @@ namespace alba {
     JobQueue job_queue;
   };
 
-} // namespace alba
+} // namespace loki

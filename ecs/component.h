@@ -5,7 +5,7 @@
 
 #include "string_manager.h"
 
-namespace alba {
+namespace loki {
 
   using ComponentID = StringID;
 
@@ -27,4 +27,4 @@ namespace alba {
 
   template <typename Self> ComponentID ComponentWrapper<Self>::id = StringID{ typeid(Self).name() };
 
-} // namespace alba
+} // namespace loki

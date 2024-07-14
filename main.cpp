@@ -19,10 +19,10 @@ void* operator new[](size_t size, size_t alignment, size_t alignment_offset, con
 
 int main(int argc, char* argv[])
 {
-  CLI::App app{ "Alba Engine" };
+  CLI::App app{ "loki Engine" };
   argv = app.ensure_utf8(argv);
 
-  std::shared_ptr<alba::EngineSettings> settings = std::make_shared<alba::EngineSettings>();
+  std::shared_ptr<loki::EngineSettings> settings = std::make_shared<loki::EngineSettings>();
 
   CLI::Option* testing_flag = app.add_flag("--testing");
   app.add_option("--root", settings->root_path);

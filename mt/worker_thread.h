@@ -4,7 +4,7 @@
 
 #include "job_queue.h"
 
-namespace alba {
+namespace loki {
 
   class WorkerThread
   {
@@ -12,7 +12,7 @@ namespace alba {
     using UniquePtr = std::unique_ptr<WorkerThread>;
 
   public:
-    explicit WorkerThread(alba::JobQueue& queue, std::size_t number);
+    explicit WorkerThread(loki::JobQueue& queue, std::size_t number);
 
     void stop();
 
@@ -26,4 +26,4 @@ namespace alba {
     std::size_t number;
   };
 
-} // namespace alba
+} // namespace loki

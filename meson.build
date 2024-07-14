@@ -1,4 +1,4 @@
-project('alba', 'cpp',
+project('loki', 'cpp',
         default_options : [
             'default_library=static',
             'cpp_std=c++17',
@@ -34,5 +34,5 @@ sources = [
     'ecs/archetype.cpp',
 ]
 
-executable('alba', sources,
+executable('loki', sources,
            dependencies : dependencies)

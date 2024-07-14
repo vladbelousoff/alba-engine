@@ -6,7 +6,7 @@
 #include "spin_lock.h"
 #include "string_manager.h"
 
-namespace alba {
+namespace loki {
 
   class JobQueue;
 
@@ -45,4 +45,4 @@ namespace alba {
     std::vector<WeakPtr> dependants;
   };
 
-} // namespace alba
+} // namespace loki

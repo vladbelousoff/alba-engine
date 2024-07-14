@@ -2,42 +2,42 @@
 
 #include <gtest/gtest.h>
 
-alba::ThreadPool::ThreadPool(std::size_t num_threads)
+loki::ThreadPool::ThreadPool(std::size_t num_threads)
 {
   for (std::size_t i = 0; i < num_threads; ++i) {
     workers.emplace_back(std::make_unique<WorkerThread>(job_queue, i));
   }
 }
 
-alba::ThreadPool::~ThreadPool()
+loki::ThreadPool::~ThreadPool()
 {
   for (auto& worker : workers) {
     worker->stop();
   }
 }
 
-void alba::ThreadPool::submit_job(const Job::SharedPtr& job)
+void loki::ThreadPool::submit_job(const Job::SharedPtr& job)
 {
   job_queue.push_job(job);
 }
 
-void alba::ThreadPool::wait_all()
+void loki::ThreadPool::wait_all()
 {
   job_queue.wait_all();
 }
 
-void alba::ThreadPool::reset()
+void loki::ThreadPool::reset()
 {
   job_queue.reset();
 }
 
 TEST(ThreadPool, BasicCounter)
 {
-  class DefaultJob : public alba::Job
+  class DefaultJob : public loki::Job
   {
   public:
-    explicit DefaultJob(alba::StringID name, std::atomic<int>& counter)
-        : alba::Job(name)
+    explicit DefaultJob(loki::StringID name, std::atomic<int>& counter)
+        : loki::Job(name)
         , counter(counter)
     {
     }
@@ -52,10 +52,10 @@ TEST(ThreadPool, BasicCounter)
   };
 
   std::atomic<int> counter{ 0 };
-  alba::ThreadPool thread_pool{ 4 };
+  loki::ThreadPool thread_pool{ 4 };
 
   for (int i = 0; i < 1'000; ++i) {
-    alba::Job::SharedPtr job = std::make_unique<DefaultJob>(alba::StringID{ std::to_string(i) }, counter);
+    loki::Job::SharedPtr job = std::make_unique<DefaultJob>(loki::StringID{ std::to_string(i) }, counter);
     thread_pool.submit_job(job);
   }
 
@@ -67,11 +67,11 @@ TEST(ThreadPool, Dependencies)
 {
   static std::mutex mutex;
 
-  class DefaultJob : public alba::Job
+  class DefaultJob : public loki::Job
   {
   public:
-    explicit DefaultJob(alba::StringID name, std::vector<alba::StringID>& names)
-        : alba::Job(name)
+    explicit DefaultJob(loki::StringID name, std::vector<loki::StringID>& names)
+        : loki::Job(name)
         , names(names)
     {
     }
@@ -84,15 +84,15 @@ TEST(ThreadPool, Dependencies)
     }
 
   private:
-    std::vector<alba::StringID>& names;
+    std::vector<loki::StringID>& names;
   };
 
-  std::vector<alba::StringID> names;
-  std::vector<alba::Job::SharedPtr> jobs;
-  alba::ThreadPool thread_pool{ 3 };
+  std::vector<loki::StringID> names;
+  std::vector<loki::Job::SharedPtr> jobs;
+  loki::ThreadPool thread_pool{ 3 };
 
   for (int i = 0; i < 10; ++i) {
-    alba::Job::SharedPtr job = std::make_unique<DefaultJob>(alba::StringID{ std::to_string(i) }, names);
+    loki::Job::SharedPtr job = std::make_unique<DefaultJob>(loki::StringID{ std::to_string(i) }, names);
     jobs.push_back(job);
   }
 
@@ -118,7 +118,7 @@ TEST(ThreadPool, Dependencies)
 
   // Checks for proper dependency handling
   auto find_pos = [&](const std::string& name) {
-    return std::find(names.begin(), names.end(), alba::StringID{ name }) - names.begin();
+    return std::find(names.begin(), names.end(), loki::StringID{ name }) - names.begin();
   };
 
   EXPECT_LT(find_pos("0"), find_pos("1"));

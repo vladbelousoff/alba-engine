@@ -2,7 +2,7 @@
 
 #include <GLFW/glfw3.h>
 
-namespace alba {
+namespace loki {
 
   template <typename T> class ScopeTimer
   {
@@ -28,4 +28,4 @@ namespace alba {
     T& seconds;
   };
 
-} // namespace alba
+} // namespace loki

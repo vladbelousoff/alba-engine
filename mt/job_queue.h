@@ -7,7 +7,7 @@
 
 #include "job.h"
 
-namespace alba {
+namespace loki {
 
   class JobQueue
   {
@@ -27,4 +27,4 @@ namespace alba {
     std::unordered_set<Job*> jobs_done;
   };
 
-} // namespace alba
+} // namespace loki

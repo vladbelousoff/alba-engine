@@ -1,6 +1,6 @@
 #pragma once
 
-namespace alba {
+namespace loki {
 
   /// Compile-time bit size counting
   template <int N> struct bits_count_helper
@@ -32,4 +32,4 @@ namespace alba {
     };
   };
 
-} // namespace alba
+} // namespace loki

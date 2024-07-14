@@ -1,29 +1,29 @@
 #include "job.h"
 #include "job_queue.h"
 
-alba::Job::Job()
+loki::Job::Job()
     : flag_done{ false }
 {
 }
 
-alba::Job::Job(alba::StringID name)
+loki::Job::Job(loki::StringID name)
     : flag_done{ false }
     , name{ name }
 {
 }
 
-auto alba::Job::get_name() const -> alba::StringID
+auto loki::Job::get_name() const -> loki::StringID
 {
   return name;
 }
 
-void alba::Job::add_dependency(const SharedPtr& dependency)
+void loki::Job::add_dependency(const SharedPtr& dependency)
 {
   dependencies.push_back(dependency);
   dependency->dependants.push_back(shared_from_this());
 }
 
-void alba::Job::run(JobQueue* job_queue)
+void loki::Job::run(JobQueue* job_queue)
 {
   execute();
   flag_done = true;
@@ -33,12 +33,12 @@ void alba::Job::run(JobQueue* job_queue)
   }
 }
 
-bool alba::Job::is_done() const
+bool loki::Job::is_done() const
 {
   return flag_done;
 }
 
-bool alba::Job::is_ready_to_run() const
+bool loki::Job::is_ready_to_run() const
 {
   if (dependencies.empty()) {
     return true;
@@ -50,7 +50,7 @@ bool alba::Job::is_ready_to_run() const
   });
 }
 
-void alba::Job::reset()
+void loki::Job::reset()
 {
   flag_done = false;
 }

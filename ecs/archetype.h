@@ -7,7 +7,7 @@
 #include "component.h"
 #include "string_manager.h"
 
-namespace alba {
+namespace loki {
 
   class Archetype
   {
@@ -19,4 +19,4 @@ namespace alba {
     TypeSet type_set;
   };
 
-} // namespace alba
+} // namespace loki

@@ -1,6 +1,6 @@
 #include "job_queue.h"
 
-void alba::JobQueue::push_job(const Job::SharedPtr& job)
+void loki::JobQueue::push_job(const Job::SharedPtr& job)
 {
   {
     std::unique_lock<std::mutex> lock(queue_mutex);
@@ -13,7 +13,7 @@ void alba::JobQueue::push_job(const Job::SharedPtr& job)
   }
 }
 
-auto alba::JobQueue::pop_job() -> Job::SharedPtr
+auto loki::JobQueue::pop_job() -> Job::SharedPtr
 {
   std::unique_lock<std::mutex> lock(queue_mutex);
   if (queue.empty()) {
@@ -26,14 +26,14 @@ auto alba::JobQueue::pop_job() -> Job::SharedPtr
   return job;
 }
 
-void alba::JobQueue::mark_job_as_done(alba::Job* job)
+void loki::JobQueue::mark_job_as_done(loki::Job* job)
 {
   std::unique_lock<std::mutex> lock(jobs_mutex);
   jobs_done.insert(job);
   jobs_condition.notify_one();
 }
 
-void alba::JobQueue::wait_all()
+void loki::JobQueue::wait_all()
 {
   std::unique_lock<std::mutex> lock(jobs_mutex);
   jobs_condition.wait(lock, [this]() {
@@ -41,7 +41,7 @@ void alba::JobQueue::wait_all()
   });
 }
 
-void alba::JobQueue::reset()
+void loki::JobQueue::reset()
 {
   std::unique_lock<std::mutex> lock(jobs_mutex);
 

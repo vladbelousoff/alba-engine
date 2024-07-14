@@ -1,9 +1,9 @@
 #pragma once
 
-namespace alba {
+namespace loki {
 
   class World
   {
   };
 
-} // namespace alba
+} // namespace loki

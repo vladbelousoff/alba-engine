@@ -2,22 +2,22 @@
 
 TEST(Component, Basic)
 {
-  struct ComponentInt : alba::ComponentWrapper<ComponentInt>
+  struct ComponentInt : loki::ComponentWrapper<ComponentInt>
   {
     int value{};
   };
 
-  struct ComponentStringID : alba::ComponentWrapper<ComponentStringID>
+  struct ComponentStringID : loki::ComponentWrapper<ComponentStringID>
   {
-    alba::StringID value{};
+    loki::StringID value{};
   };
 
   auto a = ComponentInt();
   auto b = ComponentStringID();
 
   EXPECT_EQ(a.value, 0);
-  EXPECT_EQ(b.value, alba::StringManager::invalid_id);
+  EXPECT_EQ(b.value, loki::StringManager::invalid_id);
 
-  EXPECT_EQ(ComponentInt::get_id(), alba::StringID{ typeid(ComponentInt).name() });
-  EXPECT_EQ(ComponentStringID::get_id(), alba::StringID{ typeid(ComponentStringID).name() });
+  EXPECT_EQ(ComponentInt::get_id(), loki::StringID{ typeid(ComponentInt).name() });
+  EXPECT_EQ(ComponentStringID::get_id(), loki::StringID{ typeid(ComponentStringID).name() });
 }

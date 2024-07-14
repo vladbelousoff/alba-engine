@@ -5,7 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
 
-auto alba::ShaderManager::create_shader(const std::string& source, ShaderType type) -> alba::ShaderHandle
+auto loki::ShaderManager::create_shader(const std::string& source, ShaderType type) -> loki::ShaderHandle
 {
   uint32_t shader_id;
   switch (type) {
@@ -35,38 +35,38 @@ auto alba::ShaderManager::create_shader(const std::string& source, ShaderType ty
     spdlog::info("Shader {} compiled successfully", type);
   }
 
-  alba::ShaderHandle handle{};
+  loki::ShaderHandle handle{};
   handle.id = shader_id;
 
   return handle;
 }
 
-auto alba::ShaderManager::create_program(alba::ShaderHandle vert, alba::ShaderHandle frag) -> alba::ProgramHandle
+auto loki::ShaderManager::create_program(loki::ShaderHandle vert, loki::ShaderHandle frag) -> loki::ProgramHandle
 {
   GLuint shader_program = glCreateProgram();
   glAttachShader(shader_program, vert.id);
   glAttachShader(shader_program, frag.id);
   glLinkProgram(shader_program);
 
-  alba::ProgramHandle handle{};
+  loki::ProgramHandle handle{};
   handle.id = shader_program;
 
   return handle;
 }
 
-auto alba::ShaderManager::use_program(alba::ProgramHandle handle, const std::function<void(const UniformManager& manager)>& callback) -> void
+auto loki::ShaderManager::use_program(loki::ProgramHandle handle, const std::function<void(const UniformManager& manager)>& callback) -> void
 {
   glUseProgram(handle.id);
   callback(UniformManager{ handle });
   glUseProgram(0);
 }
 
-auto alba::UniformManager::set_uniform(alba::StringID name, float value) const -> void
+auto loki::UniformManager::set_uniform(loki::StringID name, float value) const -> void
 {
   glUniform1f(glGetUniformLocation(handle.id, name.to_string().c_str()), value);
 }
 
-auto alba::UniformManager::set_uniform(alba::StringID name, const glm::mat4& mat) const -> void
+auto loki::UniformManager::set_uniform(loki::StringID name, const glm::mat4& mat) const -> void
 {
   glUniformMatrix4fv(glGetUniformLocation(handle.id, name.to_string().c_str()), 1, GL_FALSE, glm::value_ptr(mat));
 }

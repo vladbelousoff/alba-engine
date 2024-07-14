@@ -11,7 +11,7 @@
 #include <memory>
 #include <utility>
 
-namespace alba {
+namespace loki {
 
   struct EngineSettings
   {
@@ -63,5 +63,5 @@ namespace alba {
     GLFWwindow* window{ nullptr };
   };
 
-} // namespace alba
+} // namespace loki
 

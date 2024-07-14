@@ -1,13 +1,13 @@
 #include "worker_thread.h"
 
-alba::WorkerThread::WorkerThread(alba::JobQueue& queue, std::size_t number)
+loki::WorkerThread::WorkerThread(loki::JobQueue& queue, std::size_t number)
     : job_queue(queue)
     , thread(&WorkerThread::run, this)
     , number(number)
 {
 }
 
-void alba::WorkerThread::run()
+void loki::WorkerThread::run()
 {
   while (!stop_flag) {
     Job::SharedPtr job = job_queue.pop_job();
@@ -18,7 +18,7 @@ void alba::WorkerThread::run()
   }
 }
 
-void alba::WorkerThread::stop()
+void loki::WorkerThread::stop()
 {
   spdlog::info("Stopping worker thread {}", number);
 

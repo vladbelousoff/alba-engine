@@ -7,7 +7,7 @@
 #include "glm/fwd.hpp"
 #include "string_manager.h"
 
-namespace alba {
+namespace loki {
 
   enum class ShaderType
   {
@@ -57,17 +57,17 @@ namespace alba {
     static auto create_program(ShaderHandle vert, ShaderHandle frag) -> ProgramHandle;
     static auto use_program(ProgramHandle handle, const std::function<void(const UniformManager& manager)>& callback) -> void;
   };
-} // namespace alba
+} // namespace loki
 
-template <> struct fmt::formatter<alba::ShaderType> : formatter<std::string>
+template <> struct fmt::formatter<loki::ShaderType> : formatter<std::string>
 {
-  auto format(alba::ShaderType type, format_context& ctx)
+  auto format(loki::ShaderType type, format_context& ctx)
   {
     switch (type) {
-      case alba::ShaderType::VERT:
-        return formatter<std::string>::format("alba::ShaderType::VERT", ctx);
-      case alba::ShaderType::FRAG:
-        return formatter<std::string>::format("alba::ShaderType::FRAG", ctx);
+      case loki::ShaderType::VERT:
+        return formatter<std::string>::format("loki::ShaderType::VERT", ctx);
+      case loki::ShaderType::FRAG:
+        return formatter<std::string>::format("loki::ShaderType::FRAG", ctx);
     }
     return formatter<std::string>::format("unknown", ctx);
   }

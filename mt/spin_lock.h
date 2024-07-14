@@ -3,7 +3,7 @@
 #include <atomic>
 #include <mutex>
 
-namespace alba {
+namespace loki {
 
   class SpinLock
   {
@@ -38,5 +38,5 @@ namespace alba {
     int retries{ 0 };
   };
 
-} // namespace alba
+} // namespace loki
 

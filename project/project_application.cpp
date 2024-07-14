@@ -105,12 +105,12 @@ void ProjectApplication::post_init()
 
   glEnable(GL_DEPTH_TEST);
 
-  alba::ShaderHandle frag = alba::ShaderManager::create_shader(default_shader_frag, alba::ShaderType::FRAG);
-  alba::ShaderHandle vert = alba::ShaderManager::create_shader(default_shader_vert, alba::ShaderType::VERT);
-  program = alba::ShaderManager::create_program(vert, frag);
+  loki::ShaderHandle frag = loki::ShaderManager::create_shader(default_shader_frag, loki::ShaderType::FRAG);
+  loki::ShaderHandle vert = loki::ShaderManager::create_shader(default_shader_vert, loki::ShaderType::VERT);
+  program = loki::ShaderManager::create_program(vert, frag);
 
-  alba::ShaderManager::use_program(program, [&](const alba::UniformManager& manager) {
-    manager.set_uniform(alba::StringID{ "u_texture" }, 0);
+  loki::ShaderManager::use_program(program, [&](const loki::UniformManager& manager) {
+    manager.set_uniform(loki::StringID{ "u_texture" }, 0);
   });
 }
 
@@ -166,10 +166,10 @@ void ProjectApplication::draw()
   glClearColor(background.r, background.g, background.b, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  alba::ShaderManager::use_program(program, [&](const alba::UniformManager& manager) {
-    manager.set_uniform(alba::StringID{ "u_view" }, view);
-    manager.set_uniform(alba::StringID{ "u_model" }, model);
-    manager.set_uniform(alba::StringID{ "u_projection" }, projection);
+  loki::ShaderManager::use_program(program, [&](const loki::UniformManager& manager) {
+    manager.set_uniform(loki::StringID{ "u_view" }, view);
+    manager.set_uniform(loki::StringID{ "u_model" }, model);
+    manager.set_uniform(loki::StringID{ "u_projection" }, projection);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
