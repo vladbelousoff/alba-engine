@@ -161,13 +161,13 @@ void ProjectApplication::draw_ui()
   ImGui::End();
 
   if (ImGui::Begin("Auth")) {
-    static char host[32] = {};
+    static char host[32] = "localhost";
     ImGui::InputText("Host", host, sizeof(host));
-    static char port[32] = {};
-    ImGui::InputText("Port", port, sizeof(port));
-    static char username[32] = {};
+    static int port = 3724;
+    ImGui::InputInt("Port", &port);
+    static char username[32] = "admin";
     ImGui::InputText("Username", username, sizeof(username));
-    static char password[32] = {};
+    static char password[32] = "admin";
     ImGui::InputText("Password", password, sizeof(password));
   }
   ImGui::End();
