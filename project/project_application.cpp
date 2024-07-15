@@ -1,3 +1,6 @@
+#include "sockpp/tcp_connector.h"
+#include "sockpp/version.h"
+
 #include "project_application.h"
 
 #include "glm/glm.hpp"
@@ -8,6 +11,21 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "third_party/stb/stb_image.h"
+
+using namespace std;
+using namespace std::chrono;
+
+#if 0
+namespace game::config {
+  static const char* name = "Wow ";
+  static const int build = 12340;
+  static const char* version = "3.3.5";
+  static const int timezone = 0;
+  static const char* locale = "enUS";
+  static const char* os = "Win";
+  static const char* platform = "x86";
+}
+#endif
 
 static std::string default_shader_vert =
     "#version 330 core\n"
@@ -58,6 +76,8 @@ struct
 
 void ProjectApplication::post_init()
 {
+  sockpp::initialize();
+
   // Gen VAO & VBO
   glGenVertexArrays(1, &vao);
   glGenBuffers(1, &vbo);
@@ -165,10 +185,20 @@ void ProjectApplication::draw_ui()
     ImGui::InputText("Host", host, sizeof(host));
     static int port = 3724;
     ImGui::InputInt("Port", &port);
-    static char username[32] = "admin";
+    static char username[32] = "";
     ImGui::InputText("Username", username, sizeof(username));
-    static char password[32] = "admin";
+    static char password[32] = "";
     ImGui::InputText("Password", password, sizeof(password));
+
+    if (ImGui::Button("Connect")) {
+      spdlog::info("Connecting to auth-server @{}:{}...", host, port);
+
+      sockpp::tcp_connector conn({host, (std::uint16_t)port});
+      if (!conn) {
+        spdlog::error("Error connecting to server at {}", sockpp::inet_address(host, port).to_string());
+        spdlog::error("{}", conn.last_error_str());
+      }
+    }
   }
   ImGui::End();
 }
