@@ -2,8 +2,10 @@ project('loki', 'cpp',
         default_options : [
             'default_library=static',
             'cpp_std=c++17',
-            'cpp_rtti=false',
         ])
+
+# Define the Winsock library dependency
+winsock_dep = declare_dependency(link_args : ['-lWs2_32'])
 
 dependencies = [
     dependency('glfw3'),
@@ -16,6 +18,8 @@ dependencies = [
     dependency('mimalloc'),
     dependency('eastl'),
     dependency('stormlib'),
+    dependency('sockpp'),
+    winsock_dep,
 ]
 
 sources = [

@@ -159,6 +159,18 @@ void ProjectApplication::draw_ui()
     ImGui::SliderFloat("Distance", &camera.distance_to_origin, 0.0f, 100.0f);
   }
   ImGui::End();
+
+  if (ImGui::Begin("Auth")) {
+    static char host[32] = {};
+    ImGui::InputText("Host", host, sizeof(host));
+    static char port[32] = {};
+    ImGui::InputText("Port", port, sizeof(port));
+    static char username[32] = {};
+    ImGui::InputText("Username", username, sizeof(username));
+    static char password[32] = {};
+    ImGui::InputText("Password", password, sizeof(password));
+  }
+  ImGui::End();
 }
 
 void ProjectApplication::draw()
