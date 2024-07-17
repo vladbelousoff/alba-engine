@@ -18,7 +18,9 @@ loki::MPQChain::MPQChain(const std::filesystem::path& data_dir)
     spdlog::info("Found a MPQ file: {}", entry.path().string());
 
     if (archive.is_valid()) {
-      archive.patch(entry.path());
+      if (!archive.patch(entry.path())) {
+        spdlog::error("Error patching: {}", entry.path().string());
+      }
     } else {
       archive = MPQArchive{ entry.path() };
     }
