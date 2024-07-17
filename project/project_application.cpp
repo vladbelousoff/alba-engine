@@ -3,14 +3,20 @@
 
 #include "project_application.h"
 
+#include "engine/datasource/mpq/mpq_chain.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "imgui.h"
-#include "engine/render/shader.h"
 #include "spdlog/spdlog.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "third_party/stb/stb_image.h"
+
+#define DRAW_CUBE 0
+
+#if DRAW_CUBE
+#include "engine/render/shader.h"
+#endif
 
 using namespace std;
 using namespace std::chrono;
@@ -18,7 +24,7 @@ using namespace std::chrono;
 #if 0
 namespace game::config {
   static const char* name = "Wow ";
-  static const int build = 12340;
+  static const int build = 12'340;
   static const char* version = "3.3.5";
   static const int timezone = 0;
   static const char* locale = "enUS";
@@ -50,6 +56,7 @@ static std::string default_shader_frag =
     "  frag_color = texture(u_texture, texcoord);\n"
     "}\n";
 
+#if DRAW_CUBE
 static float vertices[] = { -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.5f, 0.5f, -0.5f, 1.0f, 1.0f, -0.5f, 0.5f, -0.5f, 0.0f,
   1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
 
@@ -67,6 +74,7 @@ static float vertices[] = { -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.5f, -0.5f, -0.5f,
 
   -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.5f, 0.5f, 0.5f, 1.0f, 0.0f, -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, -0.5f, 0.5f, -0.5f,
   0.0f, 1.0f };
+#endif
 
 struct
 {
@@ -78,6 +86,27 @@ void ProjectApplication::post_init()
 {
   sockpp::initialize();
 
+  loki::MPQChain chain{ get_root_path() / "Data" };
+
+#if 0
+  HANDLE mpq_handle;
+  HANDLE file_handle;
+
+  const auto mpq_path = absolute(get_root_path() / "Data" / "common.MPQ");
+  if (!SFileOpenArchive(mpq_path.string().c_str(), 0, 0, &mpq_handle)) {
+    spdlog::error("Error opening MPQ archive: {}", mpq_path.string());
+    return;
+  }
+
+  std::string file_name = "file/to/read.txt";
+  if (!SFileOpenFileEx(mpq_handle, file_name.c_str(), SFILE_OPEN_FROM_MPQ, &file_handle)) {
+    spdlog::error("Error opening file: {}", file_name);
+    SFileCloseArchive(mpq_handle);
+    return;
+  }
+#endif
+
+#if DRAW_CUBE
   // Gen VAO & VBO
   glGenVertexArrays(1, &vao);
   glGenBuffers(1, &vbo);
@@ -132,6 +161,7 @@ void ProjectApplication::post_init()
   loki::ShaderManager::use_program(program, [&](const loki::UniformManager& manager) {
     manager.set_uniform(loki::StringID{ "u_texture" }, 0);
   });
+#endif
 }
 
 void ProjectApplication::update()
@@ -183,7 +213,7 @@ void ProjectApplication::draw_ui()
   if (ImGui::Begin("Auth")) {
     static char host[32] = "localhost";
     ImGui::InputText("Host", host, sizeof(host));
-    static int port = 3724;
+    static int port = 3'724;
     ImGui::InputInt("Port", &port);
     static char username[32] = "";
     ImGui::InputText("Username", username, sizeof(username));
@@ -193,7 +223,7 @@ void ProjectApplication::draw_ui()
     if (ImGui::Button("Connect")) {
       spdlog::info("Connecting to auth-server @{}:{}...", host, port);
 
-      sockpp::tcp_connector conn({host, (std::uint16_t)port});
+      sockpp::tcp_connector conn({ host, (std::uint16_t)port });
       if (!conn) {
         spdlog::error("Error connecting to server at {}", sockpp::inet_address(host, port).to_string());
         spdlog::error("{}", conn.last_error_str());
@@ -208,6 +238,7 @@ void ProjectApplication::draw()
   glClearColor(background.r, background.g, background.b, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+#if DRAW_CUBE
   loki::ShaderManager::use_program(program, [&](const loki::UniformManager& manager) {
     manager.set_uniform(loki::StringID{ "u_view" }, view);
     manager.set_uniform(loki::StringID{ "u_model" }, model);
@@ -220,4 +251,5 @@ void ProjectApplication::draw()
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
   });
+#endif
 }

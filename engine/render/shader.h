@@ -4,8 +4,8 @@
 #include <spdlog/spdlog.h>
 #include <string>
 
-#include "glm/fwd.hpp"
 #include "engine/string_manager.h"
+#include "glm/fwd.hpp"
 
 namespace loki {
 

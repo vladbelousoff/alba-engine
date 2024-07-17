@@ -27,6 +27,9 @@ sources = [
     'engine/engine_application.cpp',
     'engine/string_manager.cpp',
     'engine/render/shader.cpp',
+    'engine/datasource/mpq/mpq_archive.cpp',
+    'engine/datasource/mpq/mpq_chain.cpp',
+    'engine/datasource/mpq/mpq_file.cpp',
     'project/project_application.cpp',
 ]
 
