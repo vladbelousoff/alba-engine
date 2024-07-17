@@ -5,7 +5,6 @@ project('loki', 'cpp',
         ])
 
 # Define the Winsock library dependency
-winsock_dep = declare_dependency(link_args : ['-lWs2_32'])
 
 dependencies = [
     dependency('glfw3'),
@@ -20,8 +19,16 @@ dependencies = [
     dependency('stormlib'),
     dependency('sockpp'),
     dependency('glob'),
-    winsock_dep,
+    dependency('libassert'),
+    dependency('cpptrace'),
 ]
+
+c_compiler = meson.get_compiler('c')
+
+if host_machine.system() == 'windows'
+    dependencies += [declare_dependency(link_args : ['-lWs2_32'])]
+    dependencies += [c_compiler.find_library('dbghelp')]
+endif
 
 sources = [
     'engine/main.cpp',
