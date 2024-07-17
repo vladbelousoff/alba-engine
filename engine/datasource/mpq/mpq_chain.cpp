@@ -1,28 +1,34 @@
 #include "mpq_chain.h"
 
+#include "glob/glob.h"
 #include "spdlog/spdlog.h"
 
 loki::MPQChain::MPQChain(const std::filesystem::path& data_dir)
 {
   namespace fs = std::filesystem;
 
-  for (const auto& entry : fs::recursive_directory_iterator(data_dir)) {
-    if (!fs::is_regular_file(entry)) {
+  static std::vector<std::string> patterns = { "common.MPQ", "common-2.MPQ", "expansion.MPQ", "lichking.MPQ", "*/locale-*.MPQ", "*/speech-*.MPQ", "*/expansion-locale-*.MPQ",
+    "*/lichking-locale-*.MPQ", "*/expansion-speech-*.MPQ", "*/lichking-speech-*.MPQ", "*/patch-????.MPQ", "*/patch-*.MPQ", "patch.MPQ", "patch-*.MPQ" };
+
+  std::vector<std::string> full_patterns;
+  for (auto& path : patterns) {
+    auto full_path = data_dir / path;
+    full_patterns.push_back(full_path.string());
+  }
+
+  for (const auto& path : glob::glob(full_patterns)) {
+    if (path.extension() != ".MPQ") {
       continue;
     }
 
-    if (entry.path().extension() != ".MPQ") {
-      continue;
-    }
-
-    spdlog::info("Found a MPQ file: {}", entry.path().string());
+    spdlog::info("Found a MPQ file: {}", path.filename().string());
 
     if (archive.is_valid()) {
-      if (!archive.patch(entry.path())) {
-        spdlog::error("Error patching: {}", entry.path().string());
+      if (!archive.patch(path)) {
+        spdlog::error("Error patching: {}", path.filename().string());
       }
     } else {
-      archive = MPQArchive{ entry.path() };
+      archive = MPQArchive{ path };
     }
   }
 }

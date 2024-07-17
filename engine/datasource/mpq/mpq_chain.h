@@ -3,7 +3,6 @@
 #include <filesystem>
 #include <string>
 
-#include "EASTL/vector.h"
 #include "mpq_archive.h"
 
 namespace loki {
@@ -13,9 +12,9 @@ namespace loki {
   public:
     explicit MPQChain() = default;
     explicit MPQChain(const std::filesystem::path& data_dir);
-    
+
   private:
-    MPQArchive archive{};
+    MPQArchive archive;
   };
 
 } // namespace loki

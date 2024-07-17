@@ -19,6 +19,7 @@ dependencies = [
     dependency('eastl'),
     dependency('stormlib'),
     dependency('sockpp'),
+    dependency('glob'),
     winsock_dep,
 ]
 
