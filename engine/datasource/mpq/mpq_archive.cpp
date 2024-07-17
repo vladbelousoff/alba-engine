@@ -5,7 +5,7 @@
 
 loki::MPQArchive::MPQArchive(const std::filesystem::path& path)
 {
-  if (!SFileOpenArchive(path.string().c_str(), 0, 0x00000100, &handle)) {
+  if (!SFileOpenArchive(path.string().c_str(), 0, 0x00000100 /* Read-only */, &handle)) {
     spdlog::error("Error opening MPQ archive: {}", path.string());
   }
 }
