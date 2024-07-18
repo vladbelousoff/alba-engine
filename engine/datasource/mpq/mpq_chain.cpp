@@ -11,16 +11,12 @@ loki::MPQChain::MPQChain(const std::filesystem::path& data_dir)
     "*/lichking-locale-*.MPQ", "*/expansion-speech-*.MPQ", "*/lichking-speech-*.MPQ", "*/patch-????.MPQ", "*/patch-*.MPQ", "patch.MPQ", "patch-*.MPQ" };
 
   std::vector<std::string> full_patterns;
-  for (auto& path : patterns) {
+  for (const auto& path : patterns) {
     auto full_path = data_dir / path;
     full_patterns.push_back(full_path.string());
   }
 
   for (const auto& path : glob::glob(full_patterns)) {
-    if (path.extension() != ".MPQ") {
-      continue;
-    }
-
     spdlog::info("Found a MPQ file: {}", path.filename().string());
 
     if (archive.is_valid()) {
@@ -31,4 +27,6 @@ loki::MPQChain::MPQChain(const std::filesystem::path& data_dir)
       archive = MPQArchive{ path };
     }
   }
+
+  spdlog::info("MPQ chain loading done!");
 }
