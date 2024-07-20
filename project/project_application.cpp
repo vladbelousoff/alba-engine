@@ -215,16 +215,18 @@ void ProjectApplication::draw_ui()
     ImGui::InputText("Host", host, sizeof(host));
     static int port = 3'724;
     ImGui::InputInt("Port", &port);
-    static char username[32] = "";
+    static char username[32] = "test";
     ImGui::InputText("Username", username, sizeof(username));
-    static char password[32] = "";
+    static char password[32] = "test";
     ImGui::InputText("Password", password, sizeof(password));
 
     if (ImGui::Button("Connect")) {
       spdlog::info("Connecting to auth-server @{}:{}...", host, port);
 
       sockpp::tcp_connector conn({ host, (std::uint16_t)port });
-      if (!conn) {
+      if (conn) {
+        spdlog::info("Connection established!");
+      } else {
         spdlog::error("Error connecting to server at {}", sockpp::inet_address(host, port).to_string());
         spdlog::error("{}", conn.last_error_str());
       }
