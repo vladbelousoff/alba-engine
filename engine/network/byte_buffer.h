@@ -13,12 +13,6 @@ namespace loki {
   class ByteBuffer
   {
   public:
-    enum class FieldType
-    {
-      NORMAL,
-      REVERSED,
-    };
-
     explicit ByteBuffer(Endianness endianness);
 
   public:
