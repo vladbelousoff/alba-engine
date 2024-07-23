@@ -4,7 +4,7 @@
 #include "project_application.h"
 
 #include "engine/datasource/mpq/mpq_chain.h"
-#include "engine/network/packet.h"
+#include "engine/network/byte_buffer.h"
 #include "engine/utils/endianness.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -254,27 +254,27 @@ void ProjectApplication::draw_ui()
         std::string password_str = std::string(password);
         to_uppercase(password_str);
 
-        loki::Packet packet{ loki::Endianness::LittleEndian };
-        packet.write<int8_t>(0);
-        packet.write<int8_t>(8); // protocol version
-        packet.write<int16_t>(30 + username_str.length());
-        packet.write(config::game, loki::Packet::StringRepr::REVERSED);
-        packet.write<int8_t>(0); // null terminator
-        packet.write<int8_t>(config::major_version);
-        packet.write<int8_t>(config::minor_version);
-        packet.write<int8_t>(config::patch_version);
-        packet.write<int16_t>(config::build);
-        packet.write(config::platform, loki::Packet::StringRepr::REVERSED);
-        packet.write<int8_t>(0); // null terminator
-        packet.write(config::os, loki::Packet::StringRepr::REVERSED);
-        packet.write<int8_t>(0); // null terminator
-        packet.write(config::locale, loki::Packet::StringRepr::REVERSED);
-        packet.write<uint32_t>(config::timezone);
-        packet.write<uint32_t>(0x0100007f); // ip 127.0.0.1
-        packet.write<uint8_t>(username_str.length());
-        packet.write(username_str, loki::Packet::StringRepr::NORMAL);
+        loki::ByteBuffer byte_buffer(loki::Endianness::LittleEndian);
+        byte_buffer.write<int8_t>(0);
+        byte_buffer.write<int8_t>(8); // protocol version
+        byte_buffer.write<int16_t>(30 + username_str.length());
+        byte_buffer.write(config::game);
+        byte_buffer.write<int8_t>(0); // null terminator
+        byte_buffer.write<int8_t>(config::major_version);
+        byte_buffer.write<int8_t>(config::minor_version);
+        byte_buffer.write<int8_t>(config::patch_version);
+        byte_buffer.write<int16_t>(config::build);
+        byte_buffer.write(config::platform);
+        byte_buffer.write<int8_t>(0); // null terminator
+        byte_buffer.write(config::os);
+        byte_buffer.write<int8_t>(0); // null terminator
+        byte_buffer.write(config::locale);
+        byte_buffer.write<uint32_t>(config::timezone);
+        byte_buffer.write<uint32_t>(0x0100007f); // ip 127.0.0.1
+        byte_buffer.write<uint8_t>(username_str.length());
+        byte_buffer.write(username_str, false);
 
-        packet.send(conn);
+        byte_buffer.send(conn);
 
         char buffer[4'000] = {};
         auto n = conn.read(buffer, sizeof(buffer));

@@ -2,16 +2,28 @@
 
 namespace loki {
 
+  enum class Endian
+  {
+#if defined(_MSC_VER) && !defined(__clang__)
+    little = 0,
+    big = 1,
+    native = little
+#else
+    little = __ORDER_LITTLE_ENDIAN__,
+    big = __ORDER_BIG_ENDIAN__,
+    native = __BYTE_ORDER__
+#endif
+  };
+
   enum class Endianness
   {
     LittleEndian,
     BigEndian,
   };
 
-  inline bool is_big_endian()
+  constexpr inline bool is_big_endian()
   {
-    int i = 1;
-    return !*((char*)&i);
+    return Endian::native == Endian::big;
   }
 
   // from http://stackoverflow.com/a/4956493/238609
@@ -33,7 +45,7 @@ namespace loki {
 
   template <typename T> T to_big_endian(T u)
   {
-    if (is_big_endian()) {
+    if constexpr (is_big_endian()) {
       return u;
     } else {
       return swap_endian<T>(u);
@@ -42,7 +54,7 @@ namespace loki {
 
   template <typename T> T to_little_endian(T u)
   {
-    if (!is_big_endian()) {
+    if constexpr (!is_big_endian()) {
       return u;
     } else {
       return swap_endian<T>(u);
@@ -57,6 +69,9 @@ namespace loki {
       case Endianness::BigEndian:
         return to_big_endian(u);
     }
+
+    return {};
   }
 
 } // namespace loki
+

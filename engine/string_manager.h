@@ -1,6 +1,5 @@
 #pragma once
 
-#include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
 
 #include <shared_mutex>

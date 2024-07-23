@@ -10,16 +10,16 @@
 
 namespace loki {
 
-  class Packet
+  class ByteBuffer
   {
   public:
-    enum class StringRepr
+    enum class FieldType
     {
       NORMAL,
       REVERSED,
     };
 
-    explicit Packet(Endianness endianness);
+    explicit ByteBuffer(Endianness endianness);
 
   public:
     template <typename T, typename U> void write(U value)
@@ -29,7 +29,7 @@ namespace loki {
       buffer.insert(buffer.end(), bytes, bytes + sizeof(T));
     }
 
-    void write(const std::string& string, StringRepr repr);
+    void write(const std::string& string, bool reversed = true);
     void send(sockpp::tcp_connector& conn) const;
 
   private:
