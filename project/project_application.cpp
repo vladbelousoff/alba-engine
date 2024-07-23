@@ -4,6 +4,8 @@
 #include "project_application.h"
 
 #include "engine/datasource/mpq/mpq_chain.h"
+#include "engine/network/packet.h"
+#include "engine/utils/endianness.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "imgui.h"
@@ -86,7 +88,7 @@ void ProjectApplication::post_init()
 {
   sockpp::initialize();
 
-  loki::MPQChain chain{ get_root_path() / "Data" };
+  // loki::MPQChain chain{ get_root_path() / "Data" };
 
 #if 0
   HANDLE mpq_handle;
@@ -179,6 +181,20 @@ void ProjectApplication::update()
   projection = glm::perspective(glm::radians(45.0f), (float)window_size.x / (float)window_size.y, 0.1f, 100.0f);
 }
 
+namespace config {
+
+  constexpr const char game[] = "WoW";
+  constexpr int build = 12'340;
+  constexpr const char locale[] = "enUS";
+  constexpr const char os[] = "Win";
+  constexpr const char platform[] = "x86";
+  constexpr int major_version = 3;
+  constexpr int minor_version = 3;
+  constexpr int patch_version = 5;
+  constexpr int timezone = 0;
+
+} // namespace config
+
 void ProjectApplication::draw_ui()
 {
   if (ImGui::BeginMainMenuBar()) {
@@ -220,12 +236,50 @@ void ProjectApplication::draw_ui()
     static char password[32] = "test";
     ImGui::InputText("Password", password, sizeof(password));
 
+    auto to_uppercase = [](std::string& string) {
+      std::transform(string.begin(), string.end(), string.begin(), ::toupper);
+    };
+
     if (ImGui::Button("Connect")) {
       spdlog::info("Connecting to auth-server @{}:{}...", host, port);
 
       sockpp::tcp_connector conn({ host, (std::uint16_t)port });
       if (conn) {
-        spdlog::info("Connection established!");
+        spdlog::info("Created a connection from {}", conn.address().to_string());
+        spdlog::info("Created a connection to {}", conn.peer_address().to_string());
+
+        std::string username_str = std::string(username);
+        to_uppercase(username_str);
+
+        std::string password_str = std::string(password);
+        to_uppercase(password_str);
+
+        loki::Packet packet{ loki::Endianness::LittleEndian };
+        packet.write<int8_t>(0);
+        packet.write<int8_t>(8); // protocol version
+        packet.write<int16_t>(30 + username_str.length());
+        packet.write(config::game, loki::Packet::StringRepr::REVERSED);
+        packet.write<int8_t>(0); // null terminator
+        packet.write<int8_t>(config::major_version);
+        packet.write<int8_t>(config::minor_version);
+        packet.write<int8_t>(config::patch_version);
+        packet.write<int16_t>(config::build);
+        packet.write(config::platform, loki::Packet::StringRepr::REVERSED);
+        packet.write<int8_t>(0); // null terminator
+        packet.write(config::os, loki::Packet::StringRepr::REVERSED);
+        packet.write<int8_t>(0); // null terminator
+        packet.write(config::locale, loki::Packet::StringRepr::REVERSED);
+        packet.write<uint32_t>(config::timezone);
+        packet.write<uint32_t>(0x0100007f); // ip 127.0.0.1
+        packet.write<uint8_t>(username_str.length());
+        packet.write(username_str, loki::Packet::StringRepr::NORMAL);
+
+        packet.send(conn);
+
+        char buffer[4'000] = {};
+        auto n = conn.read(buffer, sizeof(buffer));
+        spdlog::info("read: {}", n);
+
       } else {
         spdlog::error("Error connecting to server at {}", sockpp::inet_address(host, port).to_string());
         spdlog::error("{}", conn.last_error_str());
