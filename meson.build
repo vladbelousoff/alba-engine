@@ -33,6 +33,7 @@ sources = [
     'engine/engine_application.cpp',
     'engine/string_manager.cpp',
     'engine/network/byte_buffer.cpp',
+    'engine/network/packet.cpp',
     'engine/render/shader.cpp',
     'engine/datasource/mpq/mpq_archive.cpp',
     'engine/datasource/mpq/mpq_chain.cpp',

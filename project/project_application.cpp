@@ -1,3 +1,4 @@
+#include "engine/network/packet.h"
 #include "sockpp/tcp_connector.h"
 #include "sockpp/version.h"
 
@@ -6,6 +7,7 @@
 #include "engine/datasource/mpq/mpq_chain.h"
 #include "engine/network/byte_buffer.h"
 #include "engine/utils/endianness.h"
+#include "engine/utils/types.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "imgui.h"
@@ -194,6 +196,15 @@ namespace config {
   constexpr int timezone = 0;
 
 } // namespace config
+
+class AuthChallenge : public loki::Packet
+{
+public:
+  LOKI_DECLARE_PACKET_FIELD(command, loki::i8);
+  LOKI_DECLARE_PACKET_FIELD(protocol_version, loki::i8);
+  LOKI_DECLARE_PACKET_FIELD(packet_size, loki::i16);
+  LOKI_DECLARE_PACKET_FIELD(game_name, loki::u8, 4);
+};
 
 void ProjectApplication::draw_ui()
 {
