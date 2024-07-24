@@ -49,10 +49,10 @@ namespace loki {
 
     template <size_t Size, typename T> void read(std::array<T, Size>& arr)
     {
-      read_bytes(arr.data(), Size * sizeof(T));
+      read(arr.data(), Size * sizeof(T));
     }
 
-    void read_bytes(char* data, std::size_t n)
+    void read(char* data, std::size_t n)
     {
       DEBUG_ASSERT(read_pos + n <= buffer.size());
       std::memcpy(data, &buffer[read_pos], n);

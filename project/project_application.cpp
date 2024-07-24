@@ -312,12 +312,12 @@ void ProjectApplication::draw_ui()
         auto g_len = challenge.read<uint8_t>();
         spdlog::info("SRP G Length: {}", g_len);
         std::vector<char> g(g_len);
-        challenge.read_bytes(g.data(), g_len);
+        challenge.read(g.data(), g_len);
 
         auto n_len = challenge.read<uint8_t>();
         spdlog::info("SRP N Length: {}", n_len);
         std::vector<char> n(n_len);
-        challenge.read_bytes(n.data(), n_len);
+        challenge.read(n.data(), n_len);
 
         std::array<char, 32> s{};
         challenge.read(s);
