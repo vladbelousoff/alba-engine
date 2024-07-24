@@ -197,22 +197,22 @@ namespace config {
 
 } // namespace config
 
-struct AuthChallenge : public loki::Packet
+struct PaketAuthChallengeRequest : public loki::Packet
 {
   LOKI_DECLARE_PACKET_FIELD(command, loki::i8);
   LOKI_DECLARE_PACKET_FIELD(protocol_version, loki::i8);
   LOKI_DECLARE_PACKET_FIELD(packet_size, loki::i16);
-  LOKI_DECLARE_PACKET_BLOCK(game_name, loki::u8, 4);
+  LOKI_DECLARE_PACKET_ARRAY(game_name, loki::u8, 4);
   LOKI_DECLARE_PACKET_FIELD(major_version, loki::i8);
   LOKI_DECLARE_PACKET_FIELD(minor_version, loki::i8);
   LOKI_DECLARE_PACKET_FIELD(patch_version, loki::i8);
   LOKI_DECLARE_PACKET_FIELD(build, loki::i16);
-  LOKI_DECLARE_PACKET_BLOCK(platform, loki::u8, 4);
-  LOKI_DECLARE_PACKET_BLOCK(os, loki::u8, 4);
-  LOKI_DECLARE_PACKET_BLOCK(country, loki::u32, 4);
+  LOKI_DECLARE_PACKET_ARRAY(platform, loki::u8, 4);
+  LOKI_DECLARE_PACKET_ARRAY(os, loki::u8, 4);
+  LOKI_DECLARE_PACKET_ARRAY(country, loki::u32, 4);
   LOKI_DECLARE_PACKET_FIELD(timezone, loki::u32);
   LOKI_DECLARE_PACKET_FIELD(ip_address, loki::u32);
-  LOKI_DECLARE_PACKET_ARRAY(spi);
+  LOKI_DECLARE_PACKET_BLOCK(spi);
 };
 
 void ProjectApplication::draw_ui()
@@ -268,17 +268,17 @@ void ProjectApplication::draw_ui()
         spdlog::info("Created a connection from {}", conn.address().to_string());
         spdlog::info("Created a connection to {}", conn.peer_address().to_string());
 
-        std::string username_str = std::string(username);
-        to_uppercase(username_str);
+        std::string username_uppercase = std::string(username);
+        to_uppercase(username_uppercase);
 
-        std::string password_str = std::string(password);
-        to_uppercase(password_str);
+        std::string password_uppercase = std::string(password);
+        to_uppercase(password_uppercase);
 
-        AuthChallenge auth;
+        PaketAuthChallengeRequest auth;
 
         auth.command << 0;
         auth.protocol_version << 8;
-        auth.packet_size << username_str.length() + 30;
+        auth.packet_size << username_uppercase.length() + 30;
         auth.game_name << config::game;
         auth.major_version << config::major_version;
         auth.minor_version << config::minor_version;
@@ -288,11 +288,10 @@ void ProjectApplication::draw_ui()
         auth.os << config::os;
         auth.country << config::locale;
         auth.timezone << config::timezone;
-        auth.ip_address << 0x0100007f;
-        auth.spi << username_str;
+        auth.ip_address << loki::swap_endian(conn.address().address());
+        auth.spi << username_uppercase;
 
         loki::ByteBuffer challenge(loki::Endianness::LittleEndian);
-
         auth.finalize_buffer(challenge);
         challenge.send(conn);
 

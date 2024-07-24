@@ -73,7 +73,7 @@ namespace loki {
 
   protected:
     Endianness endianness;
-    std::vector<std::uint8_t> buffer;
+    std::vector<loki::u8> buffer;
     std::size_t read_pos = 0;
   };
 

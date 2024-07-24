@@ -3,9 +3,9 @@
 #include "byte_buffer.h"
 #include "engine/utils/types.h"
 
-#define LOKI_DECLARE_PACKET_FIELD(NAME, TYPE)       loki::PacketFieldT<TYPE, 0x01> NAME{ this };
-#define LOKI_DECLARE_PACKET_BLOCK(NAME, TYPE, SIZE) loki::PacketFieldT<TYPE, SIZE> NAME{ this };
-#define LOKI_DECLARE_PACKET_ARRAY(NAME)             loki::PacketFieldArray NAME{ this };
+#define LOKI_DECLARE_PACKET_FIELD(NAME, TYPE)       loki::PacketFieldT<TYPE, 0x01> NAME{ #NAME, this };
+#define LOKI_DECLARE_PACKET_ARRAY(NAME, TYPE, SIZE) loki::PacketFieldT<TYPE, SIZE> NAME{ #NAME, this };
+#define LOKI_DECLARE_PACKET_BLOCK(NAME)             loki::PacketFieldArray NAME{ #NAME, this };
 
 namespace loki {
 
@@ -17,8 +17,9 @@ namespace loki {
     friend class Packet;
 
   public:
-    explicit PacketField(Packet* pkt)
-        : pkt{ *pkt }
+    explicit PacketField(std::string_view name, Packet* pkt)
+        : name{ name }
+        , pkt{ *pkt }
     {
       add_field_in_pkt();
     }
@@ -28,6 +29,7 @@ namespace loki {
     void add_field_in_pkt();
 
   protected:
+    std::string name;
     Packet& pkt;
   };
 
@@ -36,8 +38,8 @@ namespace loki {
     using Self = PacketFieldT<Type, Size>;
 
   public:
-    explicit PacketFieldT(Packet* pkt)
-        : PacketField{ pkt }
+    explicit PacketFieldT(std::string_view name, Packet* pkt)
+        : PacketField{ name, pkt }
         , data{}
     {
     }
@@ -64,14 +66,14 @@ namespace loki {
     using Self = PacketFieldT<Type, 1>;
 
   public:
-    explicit PacketFieldT(Packet* pkt)
-        : PacketField{ pkt }
+    explicit PacketFieldT(std::string_view name, Packet* pkt)
+        : PacketField{ name, pkt }
         , value{}
     {
     }
 
-    explicit PacketFieldT(Packet* pkt, Type value)
-        : PacketField{ pkt }
+    explicit PacketFieldT(std::string_view name, Packet* pkt, Type value)
+        : PacketField{ name, pkt }
         , value{ value }
     {
     }
@@ -98,8 +100,8 @@ namespace loki {
     using Self = PacketFieldArray;
 
   public:
-    explicit PacketFieldArray(Packet* pkt)
-        : PacketField{ pkt }
+    explicit PacketFieldArray(std::string_view name, Packet* pkt)
+        : PacketField{ name, pkt }
     {
     }
 
