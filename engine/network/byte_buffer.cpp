@@ -8,6 +8,13 @@ loki::ByteBuffer::ByteBuffer(Endianness endianness)
 
 void loki::ByteBuffer::append(std::string_view value)
 {
+  append<loki::u8>(value.length());
+  buffer.insert(buffer.end(), value.begin(), value.end());
+}
+
+void loki::ByteBuffer::append(const std::vector<loki::u8>& value)
+{
+  append<loki::u8>(value.size());
   buffer.insert(buffer.end(), value.begin(), value.end());
 }
 

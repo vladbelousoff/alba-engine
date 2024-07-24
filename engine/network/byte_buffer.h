@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "engine/utils/endianness.h"
+#include "engine/utils/types.h"
 #include "libassert/assert.hpp"
 #include "sockpp/tcp_connector.h"
 #include "sockpp/version.h"
@@ -32,6 +33,7 @@ namespace loki {
     }
 
     void append(std::string_view value);
+    void append(const std::vector<loki::u8>& value);
 
     template <typename Type, size_t Size> void append(const std::array<Type, Size>& value)
     {

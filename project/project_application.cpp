@@ -202,17 +202,17 @@ struct AuthChallenge : public loki::Packet
   LOKI_DECLARE_PACKET_FIELD(command, loki::i8);
   LOKI_DECLARE_PACKET_FIELD(protocol_version, loki::i8);
   LOKI_DECLARE_PACKET_FIELD(packet_size, loki::i16);
-  LOKI_DECLARE_PACKET_ARRAY(game_name, loki::u8, 4);
+  LOKI_DECLARE_PACKET_BLOCK(game_name, loki::u8, 4);
   LOKI_DECLARE_PACKET_FIELD(major_version, loki::i8);
   LOKI_DECLARE_PACKET_FIELD(minor_version, loki::i8);
   LOKI_DECLARE_PACKET_FIELD(patch_version, loki::i8);
   LOKI_DECLARE_PACKET_FIELD(build, loki::i16);
-  LOKI_DECLARE_PACKET_ARRAY(platform, loki::u8, 4);
-  LOKI_DECLARE_PACKET_ARRAY(os, loki::u8, 4);
-  LOKI_DECLARE_PACKET_ARRAY(country, loki::u32, 4);
+  LOKI_DECLARE_PACKET_BLOCK(platform, loki::u8, 4);
+  LOKI_DECLARE_PACKET_BLOCK(os, loki::u8, 4);
+  LOKI_DECLARE_PACKET_BLOCK(country, loki::u32, 4);
   LOKI_DECLARE_PACKET_FIELD(timezone, loki::u32);
   LOKI_DECLARE_PACKET_FIELD(ip_address, loki::u32);
-  LOKI_DECLARE_PACKET_FIELD(spi_length, loki::u8);
+  LOKI_DECLARE_PACKET_ARRAY(spi);
 };
 
 void ProjectApplication::draw_ui()
@@ -289,37 +289,12 @@ void ProjectApplication::draw_ui()
         auth.country << config::locale;
         auth.timezone << config::timezone;
         auth.ip_address << 0x0100007f;
-        auth.spi_length << username_str.length();
+        auth.spi << username_str;
 
         loki::ByteBuffer challenge(loki::Endianness::LittleEndian);
 
         auth.finalize_buffer(challenge);
-        challenge.append(username_str);
-
         challenge.send(conn);
-
-#if 0
-        challenge.append<int8_t>(0); // auth challenge
-        challenge.append<int8_t>(8); // protocol version
-        challenge.append<int16_t>(30 + username_str.length());
-        challenge.append(config::game);
-        challenge.append<int8_t>(0); // null terminator
-        challenge.append<int8_t>(config::major_version);
-        challenge.append<int8_t>(config::minor_version);
-        challenge.append<int8_t>(config::patch_version);
-        challenge.append<int16_t>(config::build);
-        challenge.append(config::platform);
-        challenge.append<int8_t>(0); // null terminator
-        challenge.append(config::os);
-        challenge.append<int8_t>(0); // null terminator
-        challenge.append(config::locale);
-        challenge.append<uint32_t>(config::timezone);
-        challenge.append<uint32_t>(0x0100007f); // ip 127.0.0.1
-        challenge.append<uint8_t>(username_str.length());
-        challenge.append(username_str, false);
-
-        challenge.send(conn);
-#endif
 
         challenge.receive(conn);
 

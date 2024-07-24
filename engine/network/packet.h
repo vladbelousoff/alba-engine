@@ -1,9 +1,11 @@
 #pragma once
 
 #include "byte_buffer.h"
+#include "engine/utils/types.h"
 
 #define LOKI_DECLARE_PACKET_FIELD(NAME, TYPE)       loki::PacketFieldT<TYPE, 0x01> NAME{ this };
-#define LOKI_DECLARE_PACKET_ARRAY(NAME, TYPE, SIZE) loki::PacketFieldT<TYPE, SIZE> NAME{ this };
+#define LOKI_DECLARE_PACKET_BLOCK(NAME, TYPE, SIZE) loki::PacketFieldT<TYPE, SIZE> NAME{ this };
+#define LOKI_DECLARE_PACKET_ARRAY(NAME)             loki::PacketFieldArray NAME{ this };
 
 namespace loki {
 
@@ -91,18 +93,38 @@ namespace loki {
     Type value;
   };
 
+  class PacketFieldArray : public PacketField
+  {
+    using Self = PacketFieldArray;
+
+  public:
+    explicit PacketFieldArray(Packet* pkt)
+        : PacketField{ pkt }
+    {
+    }
+
+  public:
+    Self& operator<<(std::string_view view)
+    {
+      data.resize(view.size());
+      std::memcpy(data.data(), view.data(), view.size());
+      return *this;
+    }
+
+  protected:
+    void insert_to(ByteBuffer& buffer) const override
+    {
+      buffer.append(data);
+    }
+
+    std::vector<loki::u8> data;
+  };
+
   class Packet
   {
     friend class PacketField;
 
   public:
-#if 0
-    template <typename Type> void operator<<(Type value)
-    {
-      fields.push_back(new PacketFieldT<Type, 1>{ this, value });
-    }
-#endif
-
     Packet& operator>>(PacketField& field);
 
     void finalize_buffer(loki::ByteBuffer& buffer) const;
