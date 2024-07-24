@@ -312,9 +312,10 @@ void ProjectApplication::draw_ui()
         byte_buffer.receive(conn);
         auth_response << byte_buffer;
 
-        spdlog::info("Command: {}", auth_response.command.get());
-        spdlog::info("Protocol: {}", auth_response.protocol_version.get());
-        spdlog::info("Status: {}", auth_response.status.get());
+        spdlog::info("---- Auth Response ----");
+        for (auto* field : auth_response.get_fields()) {
+          spdlog::info("{}: {}", field->get_name(), field->to_string());
+        }
 
       } else {
         spdlog::error("Error connecting to server at {}", sockpp::inet_address(host, port).to_string());

@@ -2,6 +2,7 @@
 
 #include "byte_buffer.h"
 #include "engine/utils/types.h"
+#include <iomanip>
 
 #define LOKI_DECLARE_PACKET_FIELD(NAME, TYPE)       loki::PacketFieldT<TYPE, 0x01> NAME{ #NAME, this };
 #define LOKI_DECLARE_PACKET_ARRAY(NAME, TYPE, SIZE) loki::PacketFieldT<TYPE, SIZE> NAME{ #NAME, this };
@@ -22,6 +23,14 @@ namespace loki {
         , pkt{ *pkt }
     {
       add_field_in_pkt();
+    }
+
+  public:
+    virtual std::string to_string() const = 0;
+
+    std::string get_name() const
+    {
+      return name;
     }
 
   protected:
@@ -51,6 +60,16 @@ namespace loki {
       DEBUG_ASSERT(view.size() <= Size);
       std::memcpy(data.data(), view.data(), view.size());
       return *this;
+    }
+
+  public:
+    std::string to_string() const override
+    {
+      std::ostringstream oss;
+      for (const auto& byte : data) {
+        oss << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(byte);
+      }
+      return oss.str();
     }
 
   protected:
@@ -83,6 +102,12 @@ namespace loki {
         : PacketField{ name, pkt }
         , value{ value }
     {
+    }
+
+  public:
+    std::string to_string() const override
+    {
+      return std::to_string(value);
     }
 
   public:
@@ -130,6 +155,15 @@ namespace loki {
       return *this;
     }
 
+    std::string to_string() const override
+    {
+      std::ostringstream oss;
+      for (const auto& byte : data) {
+        oss << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(byte);
+      }
+      return oss.str();
+    }
+
   protected:
     void insert_to(ByteBuffer& buffer) const override
     {
@@ -152,6 +186,11 @@ namespace loki {
   public:
     void operator>>(loki::ByteBuffer& buffer) const;
     void operator<<(loki::ByteBuffer& buffer);
+
+    const std::vector<PacketField*>& get_fields() const
+    {
+      return fields;
+    }
 
   protected:
     void fill_buffer(loki::ByteBuffer& buffer) const;
