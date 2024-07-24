@@ -197,13 +197,22 @@ namespace config {
 
 } // namespace config
 
-class AuthChallenge : public loki::Packet
+struct AuthChallenge : public loki::Packet
 {
-public:
   LOKI_DECLARE_PACKET_FIELD(command, loki::i8);
   LOKI_DECLARE_PACKET_FIELD(protocol_version, loki::i8);
   LOKI_DECLARE_PACKET_FIELD(packet_size, loki::i16);
-  LOKI_DECLARE_PACKET_FIELD(game_name, loki::u8, 4);
+  LOKI_DECLARE_PACKET_ARRAY(game_name, loki::u8, 4);
+  LOKI_DECLARE_PACKET_FIELD(major_version, loki::i8);
+  LOKI_DECLARE_PACKET_FIELD(minor_version, loki::i8);
+  LOKI_DECLARE_PACKET_FIELD(patch_version, loki::i8);
+  LOKI_DECLARE_PACKET_FIELD(build, loki::i16);
+  LOKI_DECLARE_PACKET_ARRAY(platform, loki::u8, 4);
+  LOKI_DECLARE_PACKET_ARRAY(os, loki::u8, 4);
+  LOKI_DECLARE_PACKET_ARRAY(country, loki::u32, 4);
+  LOKI_DECLARE_PACKET_FIELD(timezone, loki::u32);
+  LOKI_DECLARE_PACKET_FIELD(ip_address, loki::u32);
+  LOKI_DECLARE_PACKET_FIELD(spi_length, loki::u8);
 };
 
 void ProjectApplication::draw_ui()
@@ -265,8 +274,31 @@ void ProjectApplication::draw_ui()
         std::string password_str = std::string(password);
         to_uppercase(password_str);
 
+        AuthChallenge auth;
+
+        auth.command << 0;
+        auth.protocol_version << 8;
+        auth.packet_size << username_str.length() + 30;
+        auth.game_name << config::game;
+        auth.major_version << config::major_version;
+        auth.minor_version << config::minor_version;
+        auth.patch_version << config::patch_version;
+        auth.build << config::build;
+        auth.platform << config::platform;
+        auth.os << config::os;
+        auth.country << config::locale;
+        auth.timezone << config::timezone;
+        auth.ip_address << 0x0100007f;
+        auth.spi_length << username_str.length();
+
         loki::ByteBuffer challenge(loki::Endianness::LittleEndian);
 
+        auth.finalize_buffer(challenge);
+        challenge.append(username_str);
+
+        challenge.send(conn);
+
+#if 0
         challenge.append<int8_t>(0); // auth challenge
         challenge.append<int8_t>(8); // protocol version
         challenge.append<int16_t>(30 + username_str.length());
@@ -287,6 +319,8 @@ void ProjectApplication::draw_ui()
         challenge.append(username_str, false);
 
         challenge.send(conn);
+#endif
+
         challenge.receive(conn);
 
         auto command = challenge.read<uint8_t>();

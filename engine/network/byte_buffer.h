@@ -16,6 +16,11 @@ namespace loki {
     constexpr static size_t DEFAULT_SIZE = 0x1000;
 
   public:
+    explicit ByteBuffer()
+        : ByteBuffer(Endianness::LittleEndian)
+    {
+    }
+
     explicit ByteBuffer(Endianness endianness);
 
   public:
@@ -26,7 +31,12 @@ namespace loki {
       buffer.insert(buffer.end(), bytes, bytes + sizeof(T));
     }
 
-    void append(std::string_view value, bool reversed = true);
+    void append(std::string_view value);
+
+    template <typename Type, size_t Size> void append(const std::array<Type, Size>& value)
+    {
+      buffer.insert(buffer.end(), value.rbegin(), value.rend());
+    }
 
     template <typename T> T read()
     {
@@ -59,7 +69,7 @@ namespace loki {
       return converted_value;
     }
 
-  private:
+  protected:
     Endianness endianness;
     std::vector<std::uint8_t> buffer;
     std::size_t read_pos = 0;

@@ -6,13 +6,9 @@ loki::ByteBuffer::ByteBuffer(Endianness endianness)
   buffer.reserve(DEFAULT_SIZE);
 }
 
-void loki::ByteBuffer::append(std::string_view value, bool reversed)
+void loki::ByteBuffer::append(std::string_view value)
 {
-  if (reversed) {
-    buffer.insert(buffer.end(), value.rbegin(), value.rend());
-  } else {
-    buffer.insert(buffer.end(), value.begin(), value.end());
-  }
+  buffer.insert(buffer.end(), value.begin(), value.end());
 }
 
 void loki::ByteBuffer::send(sockpp::tcp_connector& conn) const
