@@ -254,31 +254,60 @@ void ProjectApplication::draw_ui()
         std::string password_str = std::string(password);
         to_uppercase(password_str);
 
-        loki::ByteBuffer byte_buffer(loki::Endianness::LittleEndian);
-        byte_buffer.write<int8_t>(0);
-        byte_buffer.write<int8_t>(8); // protocol version
-        byte_buffer.write<int16_t>(30 + username_str.length());
-        byte_buffer.write(config::game);
-        byte_buffer.write<int8_t>(0); // null terminator
-        byte_buffer.write<int8_t>(config::major_version);
-        byte_buffer.write<int8_t>(config::minor_version);
-        byte_buffer.write<int8_t>(config::patch_version);
-        byte_buffer.write<int16_t>(config::build);
-        byte_buffer.write(config::platform);
-        byte_buffer.write<int8_t>(0); // null terminator
-        byte_buffer.write(config::os);
-        byte_buffer.write<int8_t>(0); // null terminator
-        byte_buffer.write(config::locale);
-        byte_buffer.write<uint32_t>(config::timezone);
-        byte_buffer.write<uint32_t>(0x0100007f); // ip 127.0.0.1
-        byte_buffer.write<uint8_t>(username_str.length());
-        byte_buffer.write(username_str, false);
+        loki::ByteBuffer challenge(loki::Endianness::LittleEndian);
 
-        byte_buffer.send(conn);
+        challenge.append<int8_t>(0); // auth challenge
+        challenge.append<int8_t>(8); // protocol version
+        challenge.append<int16_t>(30 + username_str.length());
+        challenge.append(config::game);
+        challenge.append<int8_t>(0); // null terminator
+        challenge.append<int8_t>(config::major_version);
+        challenge.append<int8_t>(config::minor_version);
+        challenge.append<int8_t>(config::patch_version);
+        challenge.append<int16_t>(config::build);
+        challenge.append(config::platform);
+        challenge.append<int8_t>(0); // null terminator
+        challenge.append(config::os);
+        challenge.append<int8_t>(0); // null terminator
+        challenge.append(config::locale);
+        challenge.append<uint32_t>(config::timezone);
+        challenge.append<uint32_t>(0x0100007f); // ip 127.0.0.1
+        challenge.append<uint8_t>(username_str.length());
+        challenge.append(username_str, false);
 
-        char buffer[4'000] = {};
-        auto n = conn.read(buffer, sizeof(buffer));
-        spdlog::info("read: {}", n);
+        challenge.send(conn);
+        challenge.receive(conn);
+
+        auto command = challenge.read<uint8_t>();
+        spdlog::info("Protocol: {}", command);
+
+        auto protocol = challenge.read<uint8_t>();
+        spdlog::info("Protocol: {}", protocol);
+
+        auto status = challenge.read<uint8_t>();
+        spdlog::info("Status: {}", status);
+
+        std::array<char, 32> b{};
+        challenge.read(b);
+
+        auto g_len = challenge.read<uint8_t>();
+        spdlog::info("SRP G Length: {}", g_len);
+        std::vector<char> g(g_len);
+        challenge.read_bytes(g.data(), g_len);
+
+        auto n_len = challenge.read<uint8_t>();
+        spdlog::info("SRP N Length: {}", n_len);
+        std::vector<char> n(n_len);
+        challenge.read_bytes(n.data(), n_len);
+
+        std::array<char, 32> s{};
+        challenge.read(s);
+
+        std::array<char, 16> crc_salt{};
+        challenge.read(crc_salt);
+
+        auto two_factor_enabled = challenge.read<uint8_t>();
+        spdlog::info("Two Factor Enabled: {}", two_factor_enabled);
 
       } else {
         spdlog::error("Error connecting to server at {}", sockpp::inet_address(host, port).to_string());
