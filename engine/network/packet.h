@@ -150,7 +150,11 @@ namespace loki {
     friend class PacketField;
 
   public:
-    void finalize_buffer(loki::ByteBuffer& buffer) const;
+    void operator>>(loki::ByteBuffer& buffer) const;
+    void operator<<(loki::ByteBuffer& buffer);
+
+  protected:
+    void fill_buffer(loki::ByteBuffer& buffer) const;
     void parse_buffer(loki::ByteBuffer& buffer);
 
   private:
