@@ -52,7 +52,7 @@ namespace loki {
       read(arr.data(), Size * sizeof(T));
     }
 
-    void read(char* data, std::size_t n)
+    void read(void* data, std::size_t n)
     {
       DEBUG_ASSERT(read_pos + n <= buffer.size());
       std::memcpy(data, &buffer[read_pos], n);

@@ -1,14 +1,16 @@
 #include "packet.h"
 
-loki::Packet& loki::Packet::operator>>(loki::PacketField& field)
-{
-  return *this;
-}
-
 void loki::Packet::finalize_buffer(loki::ByteBuffer& buffer) const
 {
   for (auto* field : fields) {
     field->insert_to(buffer);
+  }
+}
+
+void loki::Packet::parse_buffer(loki::ByteBuffer& buffer)
+{
+  for (auto* field : fields) {
+    field->parse_from(buffer);
   }
 }
 

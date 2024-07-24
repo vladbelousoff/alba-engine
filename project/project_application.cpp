@@ -215,6 +215,19 @@ struct PaketAuthChallengeRequest : public loki::Packet
   LOKI_DECLARE_PACKET_BLOCK(spi);
 };
 
+struct PaketAuthChallengeResponse : public loki::Packet
+{
+  LOKI_DECLARE_PACKET_FIELD(command, loki::i8);
+  LOKI_DECLARE_PACKET_FIELD(protocol_version, loki::i8);
+  LOKI_DECLARE_PACKET_FIELD(status, loki::i8);
+  LOKI_DECLARE_PACKET_ARRAY(srp_b, loki::u8, 32);
+  LOKI_DECLARE_PACKET_BLOCK(srp_g);
+  LOKI_DECLARE_PACKET_BLOCK(srp_n);
+  LOKI_DECLARE_PACKET_ARRAY(srp_s, loki::u8, 32);
+  LOKI_DECLARE_PACKET_ARRAY(crc_salt, loki::u8, 16);
+  LOKI_DECLARE_PACKET_FIELD(two_factor_enabled, loki::i8);
+};
+
 void ProjectApplication::draw_ui()
 {
   if (ImGui::BeginMainMenuBar()) {
@@ -274,59 +287,34 @@ void ProjectApplication::draw_ui()
         std::string password_uppercase = std::string(password);
         to_uppercase(password_uppercase);
 
-        PaketAuthChallengeRequest auth;
+        loki::ByteBuffer byte_buffer(loki::Endianness::LittleEndian);
 
-        auth.command << 0;
-        auth.protocol_version << 8;
-        auth.packet_size << username_uppercase.length() + 30;
-        auth.game_name << config::game;
-        auth.major_version << config::major_version;
-        auth.minor_version << config::minor_version;
-        auth.patch_version << config::patch_version;
-        auth.build << config::build;
-        auth.platform << config::platform;
-        auth.os << config::os;
-        auth.country << config::locale;
-        auth.timezone << config::timezone;
-        auth.ip_address << loki::swap_endian(conn.address().address());
-        auth.spi << username_uppercase;
+        PaketAuthChallengeRequest auth_request;
+        auth_request.command << 0;
+        auth_request.protocol_version << 8;
+        auth_request.packet_size << username_uppercase.length() + 30;
+        auth_request.game_name << config::game;
+        auth_request.major_version << config::major_version;
+        auth_request.minor_version << config::minor_version;
+        auth_request.patch_version << config::patch_version;
+        auth_request.build << config::build;
+        auth_request.platform << config::platform;
+        auth_request.os << config::os;
+        auth_request.country << config::locale;
+        auth_request.timezone << config::timezone;
+        auth_request.ip_address << loki::swap_endian(conn.address().address());
+        auth_request.spi << username_uppercase;
 
-        loki::ByteBuffer challenge(loki::Endianness::LittleEndian);
-        auth.finalize_buffer(challenge);
-        challenge.send(conn);
+        auth_request.finalize_buffer(byte_buffer);
+        byte_buffer.send(conn);
 
-        challenge.receive(conn);
+        PaketAuthChallengeResponse auth_response;
+        byte_buffer.receive(conn);
+        auth_response.parse_buffer(byte_buffer);
 
-        auto command = challenge.read<uint8_t>();
-        spdlog::info("Protocol: {}", command);
-
-        auto protocol = challenge.read<uint8_t>();
-        spdlog::info("Protocol: {}", protocol);
-
-        auto status = challenge.read<uint8_t>();
-        spdlog::info("Status: {}", status);
-
-        std::array<char, 32> b{};
-        challenge.read(b);
-
-        auto g_len = challenge.read<uint8_t>();
-        spdlog::info("SRP G Length: {}", g_len);
-        std::vector<char> g(g_len);
-        challenge.read(g.data(), g_len);
-
-        auto n_len = challenge.read<uint8_t>();
-        spdlog::info("SRP N Length: {}", n_len);
-        std::vector<char> n(n_len);
-        challenge.read(n.data(), n_len);
-
-        std::array<char, 32> s{};
-        challenge.read(s);
-
-        std::array<char, 16> crc_salt{};
-        challenge.read(crc_salt);
-
-        auto two_factor_enabled = challenge.read<uint8_t>();
-        spdlog::info("Two Factor Enabled: {}", two_factor_enabled);
+        spdlog::info("Command: {}", auth_response.command.get());
+        spdlog::info("Protocol: {}", auth_response.protocol_version.get());
+        spdlog::info("Status: {}", auth_response.status.get());
 
       } else {
         spdlog::error("Error connecting to server at {}", sockpp::inet_address(host, port).to_string());

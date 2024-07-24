@@ -26,6 +26,8 @@ namespace loki {
 
   protected:
     virtual void insert_to(ByteBuffer& buffer) const = 0;
+    virtual void parse_from(ByteBuffer& buffer) = 0;
+
     void add_field_in_pkt();
 
   protected:
@@ -57,6 +59,11 @@ namespace loki {
       buffer.append(data);
     }
 
+    void parse_from(ByteBuffer& buffer) override
+    {
+      buffer.read(data.data(), data.size());
+    }
+
   private:
     std::array<Type, Size> data;
   };
@@ -85,10 +92,20 @@ namespace loki {
       return *this;
     }
 
+    Type get() const
+    {
+      return value;
+    }
+
   protected:
     void insert_to(ByteBuffer& buffer) const override
     {
       buffer.append<Type>(value);
+    }
+
+    void parse_from(ByteBuffer& buffer) override
+    {
+      buffer.read(&value, sizeof(value));
     }
 
   private:
@@ -119,6 +136,12 @@ namespace loki {
       buffer.append(data);
     }
 
+    void parse_from(ByteBuffer& buffer) override
+    {
+      data.resize(buffer.read<loki::u8>());
+      buffer.read(data.data(), data.size());
+    }
+
     std::vector<loki::u8> data;
   };
 
@@ -127,9 +150,8 @@ namespace loki {
     friend class PacketField;
 
   public:
-    Packet& operator>>(PacketField& field);
-
     void finalize_buffer(loki::ByteBuffer& buffer) const;
+    void parse_buffer(loki::ByteBuffer& buffer);
 
   private:
     std::vector<PacketField*> fields{};
