@@ -6,7 +6,6 @@
 
 #include "engine/datasource/mpq/mpq_chain.h"
 #include "engine/network/byte_buffer.h"
-#include "engine/utils/endianness.h"
 #include "engine/utils/types.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -287,7 +286,7 @@ void ProjectApplication::draw_ui()
         std::string password_uppercase = std::string(password);
         to_uppercase(password_uppercase);
 
-        loki::ByteBuffer byte_buffer(loki::Endianness::LittleEndian);
+        loki::ByteBuffer byte_buffer{};
 
         PaketAuthChallengeRequest auth_request;
         auth_request.command << 0;
@@ -302,7 +301,7 @@ void ProjectApplication::draw_ui()
         auth_request.os << config::os;
         auth_request.country << config::locale;
         auth_request.timezone << config::timezone;
-        auth_request.ip_address << loki::swap_endian(conn.address().address());
+        auth_request.ip_address << ntohs(conn.address().address());
         auth_request.spi << username_uppercase;
 
         spdlog::info("---- Auth Request ----");

@@ -1,7 +1,6 @@
 #include "byte_buffer.h"
 
-loki::ByteBuffer::ByteBuffer(Endianness endianness)
-    : endianness{ endianness }
+loki::ByteBuffer::ByteBuffer()
 {
   buffer.reserve(DEFAULT_SIZE);
 }
@@ -28,7 +27,7 @@ void loki::ByteBuffer::receive(sockpp::tcp_connector& conn)
   buffer.resize(DEFAULT_SIZE);
 
   ssize_t n = conn.read(buffer.data(), DEFAULT_SIZE);
-  
+
   if (n >= 0) {
     buffer.resize(n);
   }

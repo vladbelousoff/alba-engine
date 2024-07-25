@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 
-#include "engine/utils/endianness.h"
 #include "engine/utils/types.h"
 #include "libassert/assert.hpp"
 #include "sockpp/tcp_connector.h"
@@ -17,19 +16,14 @@ namespace loki {
     constexpr static size_t DEFAULT_SIZE = 0x1000;
 
   public:
-    explicit ByteBuffer()
-        : ByteBuffer(Endianness::LittleEndian)
-    {
-    }
-
-    explicit ByteBuffer(Endianness endianness);
+    explicit ByteBuffer();
 
   public:
     void reset();
 
     template <typename T, typename U> void append(U value)
     {
-      const T converted_value = loki::to_endianness(static_cast<T>(value), endianness);
+      const T converted_value = static_cast<T>(value);
       auto bytes = reinterpret_cast<const std::uint8_t*>(&converted_value);
       buffer.insert(buffer.end(), bytes, bytes + sizeof(T));
     }
@@ -44,8 +38,8 @@ namespace loki {
 
     template <typename T> T read()
     {
-      T value = read<T>(read_pos);
-      read_pos += sizeof(T);
+      T value;
+      read(&value, sizeof(T));
       return value;
     }
 
@@ -65,16 +59,6 @@ namespace loki {
     void receive(sockpp::tcp_connector& conn);
 
   protected:
-    template <typename T> T read(std::size_t from_pos) const
-    {
-      DEBUG_ASSERT(from_pos + sizeof(T) <= buffer.size());
-      T value = *((const T*)&buffer[from_pos]);
-      const T converted_value = loki::to_endianness(value, endianness);
-      return converted_value;
-    }
-
-  protected:
-    Endianness endianness;
     std::vector<loki::u8> buffer;
     std::size_t read_pos = 0;
   };
