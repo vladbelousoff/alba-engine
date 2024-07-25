@@ -222,8 +222,18 @@ struct PaketAuthChallengeResponse : public loki::Packet
   LOKI_DECLARE_PACKET_ARRAY(srp_B, loki::u8, 32);
   LOKI_DECLARE_PACKET_BLOCK(srp_g);
   LOKI_DECLARE_PACKET_BLOCK(srp_N);
-  LOKI_DECLARE_PACKET_ARRAY(salt, loki::u8, 32);
+  LOKI_DECLARE_PACKET_ARRAY(crc_salt, loki::u8, 32);
   LOKI_DECLARE_PACKET_ARRAY(unknown, loki::u8, 16);
+  LOKI_DECLARE_PACKET_FIELD(two_factor_enabled, loki::i8);
+};
+
+struct PaketLogonProofRequest : public loki::Packet
+{
+  LOKI_DECLARE_PACKET_FIELD(command, loki::i8);
+  LOKI_DECLARE_PACKET_ARRAY(A, loki::u8, 32);
+  LOKI_DECLARE_PACKET_ARRAY(M1, loki::u8, 20);
+  LOKI_DECLARE_PACKET_ARRAY(crc_hash, loki::u8, 32);
+  LOKI_DECLARE_PACKET_FIELD(number_of_keys, loki::i8);
   LOKI_DECLARE_PACKET_FIELD(two_factor_enabled, loki::i8);
 };
 
@@ -327,8 +337,24 @@ void ProjectApplication::draw_ui()
         loki::SRP srp{ srp_N, srp_g[0] };
 
         auto& srp_B = auth_response.srp_B.get();
-        auto& salt = auth_response.salt.get();
-        srp.generate(salt, srp_B, username_uppercase, password_uppercase);
+        auto& crc_salt = auth_response.crc_salt.get();
+        srp.generate(crc_salt, srp_B, username_uppercase, password_uppercase);
+
+        PaketLogonProofRequest logon_proof_request;
+        logon_proof_request.command << 1;
+        logon_proof_request.A.get() = srp.get_A();
+        logon_proof_request.M1.get() = srp.get_M1();
+        logon_proof_request.number_of_keys << 0;
+        logon_proof_request.two_factor_enabled << 0;
+
+        spdlog::info("---- Logon Proof Request ----");
+        logon_proof_request.for_each_field([](const loki::PacketField& field) {
+          spdlog::info("{}: {}", field.get_name(), field.to_string());
+        });
+
+        byte_buffer.reset();
+        logon_proof_request >> byte_buffer;
+        byte_buffer.send(conn);
 
       } else {
         spdlog::error("Error connecting to server at {}", sockpp::inet_address(host, port).to_string());

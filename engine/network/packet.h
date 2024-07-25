@@ -73,7 +73,7 @@ namespace loki {
       return oss.str();
     }
 
-    const std::array<Type, Size>& get()
+    std::array<Type, Size>& get()
     {
       return data;
     }

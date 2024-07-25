@@ -22,6 +22,9 @@ namespace loki {
   public:
     void generate(const std::array<loki::u8, 32>& salt, const std::array<loki::u8, 32>& in_B, std::string_view username, std::string_view password);
 
+    const std::array<u8, SHA_DIGEST_LENGTH>& get_M1() const;
+    const std::array<u8, 32>& get_A() const;
+
   private:
     static void hash_sha1(const std::vector<u8>& input, std::array<u8, SHA_DIGEST_LENGTH>& output);
 
@@ -36,6 +39,8 @@ namespace loki {
     BIGNUM* v = nullptr;
     BIGNUM* S = nullptr;
     std::array<u8, SHA_DIGEST_LENGTH> M1{};
+    std::array<u8, 32> A_bin{};
+    std::array<u8, 32> B_bin{};
   };
 
 } // namespace loki

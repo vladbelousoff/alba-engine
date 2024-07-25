@@ -1,4 +1,5 @@
 #include "srp.h"
+#include "libassert/assert.hpp"
 
 loki::SRP::SRP(const std::vector<loki::u8>& in_N, loki::u8 in_g)
 {
@@ -81,8 +82,8 @@ void loki::SRP::generate(const std::array<loki::u8, 32>& salt, const std::array<
   int A_size = BN_num_bytes(A);
   int B_size = BN_num_bytes(B);
 
-  std::vector<u8> A_bin(A_size);
-  std::vector<u8> B_bin(B_size);
+  DEBUG_ASSERT(A_size == A_bin.size());
+  DEBUG_ASSERT(B_size == B_bin.size());
 
   BN_bn2bin(A, A_bin.data());
   BN_bn2bin(B, B_bin.data());
@@ -127,5 +128,15 @@ void loki::SRP::generate(const std::array<loki::u8, 32>& salt, const std::array<
   BN_free(aux1);
   BN_free(aux2);
   BN_CTX_free(ctx);
+}
+
+const std::array<loki::u8, SHA_DIGEST_LENGTH>& loki::SRP::get_M1() const
+{
+  return M1;
+}
+
+const std::array<loki::u8, 32>& loki::SRP::get_A() const
+{
+  return A_bin;
 }
 
