@@ -50,9 +50,9 @@ namespace loki {
 
     void read(void* data, std::size_t n)
     {
-      DEBUG_ASSERT(read_pos + n <= buffer.size());
-      std::memcpy(data, &buffer[read_pos], n);
-      read_pos += n;
+      DEBUG_ASSERT(r_pos + n <= buffer.size());
+      std::memcpy(data, &buffer[r_pos], n);
+      r_pos += n;
     }
 
     void send(sockpp::tcp_connector& conn) const;
@@ -60,7 +60,7 @@ namespace loki {
 
   protected:
     std::vector<loki::u8> buffer;
-    std::size_t read_pos = 0;
+    std::size_t r_pos = 0;
   };
 
 } // namespace loki

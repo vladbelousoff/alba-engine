@@ -39,6 +39,6 @@ void loki::ByteBuffer::receive(sockpp::tcp_connector& conn)
 
 void loki::ByteBuffer::reset()
 {
-  read_pos = 0;
+  r_pos = 0;
   buffer.clear();
 }
