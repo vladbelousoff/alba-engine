@@ -73,6 +73,11 @@ namespace loki {
       return oss.str();
     }
 
+    const std::array<Type, Size>& get()
+    {
+      return data;
+    }
+
   protected:
     void save(ByteBuffer& buffer) const override
     {
@@ -154,6 +159,11 @@ namespace loki {
       data.resize(view.size());
       std::memcpy(data.data(), view.data(), view.size());
       return *this;
+    }
+
+    const std::vector<loki::u8>& get()
+    {
+      return data;
     }
 
     std::string to_string() const override

@@ -1,3 +1,4 @@
+#include "engine/network/srp.h"
 #include "sockpp/tcp_connector.h"
 #include "sockpp/version.h"
 
@@ -218,9 +219,9 @@ struct PaketAuthChallengeResponse : public loki::Packet
   LOKI_DECLARE_PACKET_FIELD(command, loki::i8);
   LOKI_DECLARE_PACKET_FIELD(protocol_version, loki::i8);
   LOKI_DECLARE_PACKET_FIELD(status, loki::i8);
-  LOKI_DECLARE_PACKET_ARRAY(srp_b, loki::u8, 32);
+  LOKI_DECLARE_PACKET_ARRAY(srp_B, loki::u8, 32);
   LOKI_DECLARE_PACKET_BLOCK(srp_g);
-  LOKI_DECLARE_PACKET_BLOCK(srp_n);
+  LOKI_DECLARE_PACKET_BLOCK(srp_N);
   LOKI_DECLARE_PACKET_ARRAY(salt, loki::u8, 32);
   LOKI_DECLARE_PACKET_ARRAY(unknown, loki::u8, 16);
   LOKI_DECLARE_PACKET_FIELD(two_factor_enabled, loki::i8);
@@ -319,6 +320,15 @@ void ProjectApplication::draw_ui()
         auth_response.for_each_field([](const loki::PacketField& field) {
           spdlog::info("{}: {}", field.get_name(), field.to_string());
         });
+
+        auto& srp_N = auth_response.srp_N.get();
+        auto& srp_g = auth_response.srp_g.get();
+
+        loki::SRP srp{ srp_N, srp_g[0] };
+
+        auto& srp_B = auth_response.srp_B.get();
+        auto& salt = auth_response.salt.get();
+        srp.generate(salt, srp_B, username_uppercase, password_uppercase);
 
       } else {
         spdlog::error("Error connecting to server at {}", sockpp::inet_address(host, port).to_string());

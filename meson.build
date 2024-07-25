@@ -19,6 +19,9 @@ dependencies = [
     dependency('glob'),
     dependency('libassert'),
     dependency('cpptrace'),
+    dependency('libcrypto'),
+    dependency('libssl'),
+    dependency('openssl'),
 ]
 
 c_compiler = meson.get_compiler('c')
@@ -34,6 +37,7 @@ sources = [
     'engine/string_manager.cpp',
     'engine/network/byte_buffer.cpp',
     'engine/network/packet.cpp',
+    'engine/network/srp.cpp',
     'engine/render/shader.cpp',
     'engine/datasource/mpq/mpq_archive.cpp',
     'engine/datasource/mpq/mpq_chain.cpp',
