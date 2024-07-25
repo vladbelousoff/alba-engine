@@ -1,11 +1,10 @@
-#include "engine/network/packet.h"
 #include "sockpp/tcp_connector.h"
 #include "sockpp/version.h"
 
 #include "project_application.h"
 
-#include "engine/datasource/mpq/mpq_chain.h"
 #include "engine/network/byte_buffer.h"
+#include "engine/network/packet.h"
 #include "engine/utils/types.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"

@@ -42,9 +42,9 @@ namespace loki {
       return value;
     }
 
-    template <size_t Size, typename T> void read(std::array<T, Size>& arr)
+    template <typename Type, size_t Size> void read(std::array<Type, Size>& arr)
     {
-      read(arr.data(), Size * sizeof(T));
+      read(arr.data(), Size * sizeof(Type));
     }
 
     void read(void* data, std::size_t n)
