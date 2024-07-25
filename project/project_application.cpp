@@ -221,8 +221,8 @@ struct PaketAuthChallengeResponse : public loki::Packet
   LOKI_DECLARE_PACKET_ARRAY(srp_b, loki::u8, 32);
   LOKI_DECLARE_PACKET_BLOCK(srp_g);
   LOKI_DECLARE_PACKET_BLOCK(srp_n);
-  LOKI_DECLARE_PACKET_ARRAY(srp_s, loki::u8, 32);
-  LOKI_DECLARE_PACKET_ARRAY(crc_salt, loki::u8, 16);
+  LOKI_DECLARE_PACKET_ARRAY(salt, loki::u8, 32);
+  LOKI_DECLARE_PACKET_ARRAY(unknown, loki::u8, 16);
   LOKI_DECLARE_PACKET_FIELD(two_factor_enabled, loki::i8);
 };
 
