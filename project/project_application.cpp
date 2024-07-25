@@ -208,7 +208,7 @@ struct PaketAuthChallengeRequest : public loki::Packet
   LOKI_DECLARE_PACKET_FIELD(build, loki::i16);
   LOKI_DECLARE_PACKET_ARRAY(platform, loki::u8, 4);
   LOKI_DECLARE_PACKET_ARRAY(os, loki::u8, 4);
-  LOKI_DECLARE_PACKET_ARRAY(country, loki::u32, 4);
+  LOKI_DECLARE_PACKET_ARRAY(country, loki::u8, 4);
   LOKI_DECLARE_PACKET_FIELD(timezone, loki::u32);
   LOKI_DECLARE_PACKET_FIELD(ip_address, loki::u32);
   LOKI_DECLARE_PACKET_BLOCK(spi);
@@ -301,7 +301,7 @@ void ProjectApplication::draw_ui()
         auth_request.os << config::os;
         auth_request.country << config::locale;
         auth_request.timezone << config::timezone;
-        auth_request.ip_address << ntohs(conn.address().address());
+        auth_request.ip_address << 0;
         auth_request.spi << username_uppercase;
 
         spdlog::info("---- Auth Request ----");

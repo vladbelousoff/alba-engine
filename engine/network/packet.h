@@ -58,7 +58,7 @@ namespace loki {
     Self& operator<<(std::string_view view)
     {
       DEBUG_ASSERT(view.size() <= Size);
-      std::memcpy(data.data(), view.data(), view.size());
+      std::reverse_copy(view.begin(), view.end(), data.begin());
       return *this;
     }
 

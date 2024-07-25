@@ -28,12 +28,11 @@ namespace loki {
       buffer.insert(buffer.end(), bytes, bytes + sizeof(T));
     }
 
-    void append(std::string_view value);
     void append(const std::vector<loki::u8>& value);
 
     template <typename Type, size_t Size> void append(const std::array<Type, Size>& value)
     {
-      buffer.insert(buffer.end(), value.rbegin(), value.rend());
+      buffer.insert(buffer.end(), value.begin(), value.end());
     }
 
     template <typename T> T read()
