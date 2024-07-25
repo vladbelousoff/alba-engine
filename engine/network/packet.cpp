@@ -1,27 +1,34 @@
 #include "packet.h"
 
-void loki::Packet::fill_buffer(loki::ByteBuffer& buffer) const
+void loki::Packet::save_buffer(loki::ByteBuffer& buffer) const
 {
   for (auto* field : fields) {
-    field->insert_to(buffer);
+    field->save(buffer);
   }
 }
 
-void loki::Packet::parse_buffer(loki::ByteBuffer& buffer)
+void loki::Packet::load_buffer(loki::ByteBuffer& buffer)
 {
   for (auto* field : fields) {
-    field->parse_from(buffer);
+    field->load(buffer);
   }
 }
 
 void loki::Packet::operator>>(loki::ByteBuffer& buffer) const
 {
-  fill_buffer(buffer);
+  save_buffer(buffer);
 }
 
 void loki::Packet::operator<<(loki::ByteBuffer& buffer)
 {
-  parse_buffer(buffer);
+  load_buffer(buffer);
+}
+
+void loki::Packet::for_each_field(const std::function<void(const PacketField&)>& cb) const
+{
+  for (auto* field : fields) {
+    cb(*field);
+  }
 }
 
 void loki::PacketField::add_field_in_pkt()

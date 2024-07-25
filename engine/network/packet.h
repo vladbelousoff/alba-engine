@@ -1,11 +1,12 @@
 #pragma once
 
-#include "byte_buffer.h"
-#include "engine/utils/types.h"
 #include <iomanip>
 
-#define LOKI_DECLARE_PACKET_FIELD(NAME, TYPE)       loki::PacketFieldT<TYPE, 0x01> NAME{ #NAME, this };
-#define LOKI_DECLARE_PACKET_ARRAY(NAME, TYPE, SIZE) loki::PacketFieldT<TYPE, SIZE> NAME{ #NAME, this };
+#include "byte_buffer.h"
+#include "engine/utils/types.h"
+
+#define LOKI_DECLARE_PACKET_FIELD(NAME, TYPE)       loki::PacketFieldT<TYPE, 0x01>(NAME){ #NAME, this };
+#define LOKI_DECLARE_PACKET_ARRAY(NAME, TYPE, SIZE) loki::PacketFieldT<TYPE, SIZE>(NAME){ #NAME, this };
 #define LOKI_DECLARE_PACKET_BLOCK(NAME)             loki::PacketFieldArray NAME{ #NAME, this };
 
 namespace loki {
@@ -34,8 +35,8 @@ namespace loki {
     }
 
   protected:
-    virtual void insert_to(ByteBuffer& buffer) const = 0;
-    virtual void parse_from(ByteBuffer& buffer) = 0;
+    virtual void save(ByteBuffer& buffer) const = 0;
+    virtual void load(ByteBuffer& buffer) = 0;
 
     void add_field_in_pkt();
 
@@ -73,12 +74,12 @@ namespace loki {
     }
 
   protected:
-    void insert_to(ByteBuffer& buffer) const override
+    void save(ByteBuffer& buffer) const override
     {
       buffer.append(data);
     }
 
-    void parse_from(ByteBuffer& buffer) override
+    void load(ByteBuffer& buffer) override
     {
       buffer.read(data.data(), data.size());
     }
@@ -123,12 +124,12 @@ namespace loki {
     }
 
   protected:
-    void insert_to(ByteBuffer& buffer) const override
+    void save(ByteBuffer& buffer) const override
     {
       buffer.append<Type>(value);
     }
 
-    void parse_from(ByteBuffer& buffer) override
+    void load(ByteBuffer& buffer) override
     {
       buffer.read(&value, sizeof(value));
     }
@@ -165,12 +166,12 @@ namespace loki {
     }
 
   protected:
-    void insert_to(ByteBuffer& buffer) const override
+    void save(ByteBuffer& buffer) const override
     {
       buffer.append(data);
     }
 
-    void parse_from(ByteBuffer& buffer) override
+    void load(ByteBuffer& buffer) override
     {
       data.resize(buffer.read<loki::u8>());
       buffer.read(data.data(), data.size());
@@ -187,14 +188,11 @@ namespace loki {
     void operator>>(loki::ByteBuffer& buffer) const;
     void operator<<(loki::ByteBuffer& buffer);
 
-    const std::vector<PacketField*>& get_fields() const
-    {
-      return fields;
-    }
+    void for_each_field(const std::function<void(const PacketField&)>& cb) const;
 
   protected:
-    void fill_buffer(loki::ByteBuffer& buffer) const;
-    void parse_buffer(loki::ByteBuffer& buffer);
+    void save_buffer(loki::ByteBuffer& buffer) const;
+    void load_buffer(loki::ByteBuffer& buffer);
 
   private:
     std::vector<PacketField*> fields{};

@@ -304,9 +304,9 @@ void ProjectApplication::draw_ui()
         auth_request.spi << username_uppercase;
 
         spdlog::info("---- Auth Request ----");
-        for (auto* field : auth_request.get_fields()) {
-          spdlog::info("{}: {}", field->get_name(), field->to_string());
-        }
+        auth_request.for_each_field([](const loki::PacketField& field) {
+          spdlog::info("{}: {}", field.get_name(), field.to_string());
+        });
 
         auth_request >> byte_buffer;
         byte_buffer.send(conn);
@@ -316,9 +316,9 @@ void ProjectApplication::draw_ui()
         auth_response << byte_buffer;
 
         spdlog::info("---- Auth Response ----");
-        for (auto* field : auth_response.get_fields()) {
-          spdlog::info("{}: {}", field->get_name(), field->to_string());
-        }
+        auth_response.for_each_field([](const loki::PacketField& field) {
+          spdlog::info("{}: {}", field.get_name(), field.to_string());
+        });
 
       } else {
         spdlog::error("Error connecting to server at {}", sockpp::inet_address(host, port).to_string());
