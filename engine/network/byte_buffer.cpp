@@ -28,10 +28,18 @@ void loki::ByteBuffer::receive(sockpp::tcp_connector& conn)
   buffer.resize(DEFAULT_SIZE);
 
   ssize_t n = conn.read(buffer.data(), DEFAULT_SIZE);
+  
   if (n >= 0) {
-    spdlog::info("Received {} bytes", n);
     buffer.resize(n);
-  } else {
-    spdlog::error("Error receiving!");
   }
+
+  if (n <= 0) {
+    spdlog::error("Error: !", n);
+  }
+}
+
+void loki::ByteBuffer::reset()
+{
+  read_pos = 0;
+  buffer.clear();
 }

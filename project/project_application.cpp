@@ -305,6 +305,11 @@ void ProjectApplication::draw_ui()
         auth_request.ip_address << loki::swap_endian(conn.address().address());
         auth_request.spi << username_uppercase;
 
+        spdlog::info("---- Auth Request ----");
+        for (auto* field : auth_request.get_fields()) {
+          spdlog::info("{}: {}", field->get_name(), field->to_string());
+        }
+
         auth_request >> byte_buffer;
         byte_buffer.send(conn);
 

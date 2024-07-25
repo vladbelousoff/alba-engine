@@ -25,6 +25,8 @@ namespace loki {
     explicit ByteBuffer(Endianness endianness);
 
   public:
+    void reset();
+
     template <typename T, typename U> void append(U value)
     {
       const T converted_value = loki::to_endianness(static_cast<T>(value), endianness);
