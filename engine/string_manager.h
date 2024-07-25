@@ -33,7 +33,6 @@ namespace loki {
 
   public:
     static std::string invalid_string;
-    static StringID invalid_id;
 
   private:
     static auto get_string_by_id(StringID id) -> const std::string&;
