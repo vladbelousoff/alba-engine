@@ -48,8 +48,6 @@ namespace loki {
   template<typename Type, size_t Size>
   class PacketFieldT : public PacketField
   {
-    using Self = PacketFieldT<Type, Size>;
-
   public:
     explicit PacketFieldT(std::string_view name, Packet* pkt)
       : PacketField{ name, pkt }
@@ -57,11 +55,10 @@ namespace loki {
     {
     }
 
-    Self& operator<<(std::string_view view)
+    void set(std::string_view view)
     {
       DEBUG_ASSERT(view.size() <= Size);
       std::reverse_copy(view.begin(), view.end(), data.begin());
-      return *this;
     }
 
   public:
@@ -97,8 +94,6 @@ namespace loki {
   template<typename Type>
   class PacketFieldT<Type, 1> : public PacketField
   {
-    using Self = PacketFieldT<Type, 1>;
-
   public:
     explicit PacketFieldT(std::string_view name, Packet* pkt)
       : PacketField{ name, pkt }
@@ -119,11 +114,9 @@ namespace loki {
     }
 
   public:
-    template<typename IncomingType>
-    Self& operator<<(IncomingType new_value)
+    void set(Type new_value)
     {
-      value = static_cast<Type>(new_value);
-      return *this;
+      value = new_value;
     }
 
     Type get() const
@@ -148,8 +141,6 @@ namespace loki {
 
   class PacketFieldArray : public PacketField
   {
-    using Self = PacketFieldArray;
-
   public:
     explicit PacketFieldArray(std::string_view name, Packet* pkt)
       : PacketField{ name, pkt }
@@ -157,11 +148,10 @@ namespace loki {
     }
 
   public:
-    Self& operator<<(std::string_view view)
+    void set(std::string_view view)
     {
       data.resize(view.size());
       std::memcpy(data.data(), view.data(), view.size());
-      return *this;
     }
 
     const std::vector<loki::u8>& get()

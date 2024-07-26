@@ -302,20 +302,20 @@ ProjectApplication::draw_ui()
         loki::ByteBuffer byte_buffer{};
 
         PaketAuthChallengeRequest auth_request;
-        auth_request.command << 0;
-        auth_request.protocol_version << 8;
-        auth_request.packet_size << username_uppercase.length() + 30;
-        auth_request.game_name << config::game;
-        auth_request.major_version << config::major_version;
-        auth_request.minor_version << config::minor_version;
-        auth_request.patch_version << config::patch_version;
-        auth_request.build << config::build;
-        auth_request.platform << config::platform;
-        auth_request.os << config::os;
-        auth_request.country << config::locale;
-        auth_request.timezone << config::timezone;
-        auth_request.ip_address << 0;
-        auth_request.spi << username_uppercase;
+        auth_request.command.set(0);
+        auth_request.protocol_version.set(8);
+        auth_request.packet_size.set(static_cast<loki::i16>(30 + username_uppercase.length()));
+        auth_request.game_name.set(config::game);
+        auth_request.major_version.set(config::major_version);
+        auth_request.minor_version.set(config::minor_version);
+        auth_request.patch_version.set(config::patch_version);
+        auth_request.build.set(config::build);
+        auth_request.platform.set(config::platform);
+        auth_request.os.set(config::os);
+        auth_request.country.set(config::locale);
+        auth_request.timezone.set(config::timezone);
+        auth_request.ip_address.set(0);
+        auth_request.spi.set(username_uppercase);
 
         spdlog::info("---- Auth Request ----");
         auth_request.for_each_field([](const loki::PacketField& field) {
@@ -345,11 +345,11 @@ ProjectApplication::draw_ui()
         srp.generate(srp_s, srp_B, username, password);
 
         PaketLogonProofRequest logon_proof_request;
-        logon_proof_request.command << 1;
+        logon_proof_request.command.set(1);
         logon_proof_request.A.get() = srp.get_A();
         logon_proof_request.M1.get() = srp.get_M1();
-        logon_proof_request.number_of_keys << 0;
-        logon_proof_request.two_factor_enabled << 0;
+        logon_proof_request.number_of_keys.set(0);
+        logon_proof_request.two_factor_enabled.set(0);
 
         spdlog::info("---- Logon Proof Request ----");
         logon_proof_request.for_each_field([](const loki::PacketField& field) {
