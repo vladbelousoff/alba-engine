@@ -188,14 +188,10 @@ namespace loki {
     friend class PacketField;
 
   public:
-    void operator>>(loki::ByteBuffer& buffer) const;
-    void operator<<(loki::ByteBuffer& buffer);
-
-    void for_each_field(const std::function<void(const PacketField&)>& cb) const;
-
-  protected:
     void save_buffer(loki::ByteBuffer& buffer) const;
     void load_buffer(loki::ByteBuffer& buffer);
+
+    void for_each_field(const std::function<void(const PacketField&)>& cb) const;
 
   private:
     std::vector<PacketField*> fields{};

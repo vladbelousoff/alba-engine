@@ -322,12 +322,12 @@ GameApp::draw_ui()
           spdlog::info("{}: {}", field.get_name(), field.to_string());
         });
 
-        auth_request >> byte_buffer;
+        auth_request.save_buffer(byte_buffer);
         byte_buffer.send(conn);
 
         PaketAuthChallengeResponse auth_response;
         byte_buffer.receive(conn);
-        auth_response << byte_buffer;
+        auth_response.load_buffer(byte_buffer);
 
         spdlog::info("---- Auth Response ----");
         auth_response.for_each_field([](const loki::PacketField& field) {
@@ -357,7 +357,7 @@ GameApp::draw_ui()
         });
 
         byte_buffer.reset();
-        logon_proof_request >> byte_buffer;
+        logon_proof_request.save_buffer(byte_buffer);
         byte_buffer.send(conn);
 
       } else {

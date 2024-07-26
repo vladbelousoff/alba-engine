@@ -17,18 +17,6 @@ loki::Packet::load_buffer(loki::ByteBuffer& buffer)
 }
 
 void
-loki::Packet::operator>>(loki::ByteBuffer& buffer) const
-{
-  save_buffer(buffer);
-}
-
-void
-loki::Packet::operator<<(loki::ByteBuffer& buffer)
-{
-  load_buffer(buffer);
-}
-
-void
 loki::Packet::for_each_field(const std::function<void(const PacketField&)>& cb) const
 {
   for (auto* field : fields) {
