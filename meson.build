@@ -32,8 +32,8 @@ if host_machine.system() == 'windows'
 endif
 
 sources = [
-    'engine/main.cpp',
-    'engine/engine_application.cpp',
+    'main.cpp',
+    'engine/engine_app.cpp',
     'engine/string_manager.cpp',
     'engine/network/byte_buffer.cpp',
     'engine/network/packet.cpp',
@@ -42,7 +42,7 @@ sources = [
     'engine/datasource/mpq/mpq_archive.cpp',
     'engine/datasource/mpq/mpq_chain.cpp',
     'engine/datasource/mpq/mpq_file.cpp',
-    'project/project_application.cpp',
+    'game/game_app.cpp',
 ]
 
 executable('loki', sources,

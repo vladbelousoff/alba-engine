@@ -1,11 +1,11 @@
-#include "engine_application.h"
+#include "engine_app.h"
 
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "spdlog/spdlog.h"
 #include "time/scope_timer.h"
 
-loki::EngineApplication::~EngineApplication()
+loki::EngineApp::~EngineApp()
 {
   if (window) {
     term();
@@ -13,7 +13,7 @@ loki::EngineApplication::~EngineApplication()
 }
 
 auto
-loki::EngineApplication::launch(const std::shared_ptr<EngineSettings>& _settings) -> int
+loki::EngineApp::launch(const std::shared_ptr<EngineSettings>& _settings) -> int
 {
   settings = _settings;
 
@@ -57,7 +57,7 @@ loki::EngineApplication::launch(const std::shared_ptr<EngineSettings>& _settings
 }
 
 bool
-loki::EngineApplication::init()
+loki::EngineApp::init()
 {
   if (!glfwInit()) {
     spdlog::error("Failed to initialize GLFW!");
@@ -116,7 +116,7 @@ loki::EngineApplication::init()
 }
 
 void
-loki::EngineApplication::term()
+loki::EngineApp::term()
 {
   // Some ImGui cleanups here
   ImGui_ImplOpenGL3_Shutdown();

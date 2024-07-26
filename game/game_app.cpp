@@ -2,7 +2,7 @@
 #include "sockpp/tcp_connector.h"
 #include "sockpp/version.h"
 
-#include "project_application.h"
+#include "game_app.h"
 
 #include "engine/network/byte_buffer.h"
 #include "engine/network/packet.h"
@@ -86,7 +86,7 @@ struct
 } camera;
 
 void
-ProjectApplication::post_init()
+GameApp::post_init()
 {
   sockpp::initialize();
 
@@ -169,7 +169,7 @@ ProjectApplication::post_init()
 }
 
 void
-ProjectApplication::update()
+GameApp::update()
 {
   float x = camera.distance_to_origin * glm::sin(camera.phi) * glm::cos(camera.theta);
   float y = camera.distance_to_origin * glm::cos(camera.phi);
@@ -240,7 +240,7 @@ struct PaketLogonProofRequest : public loki::Packet
 };
 
 void
-ProjectApplication::draw_ui()
+GameApp::draw_ui()
 {
   if (ImGui::BeginMainMenuBar()) {
     if (ImGui::BeginMenu("File")) {
@@ -370,7 +370,7 @@ ProjectApplication::draw_ui()
 }
 
 void
-ProjectApplication::draw()
+GameApp::draw()
 {
   glClearColor(background.r, background.g, background.b, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -18,10 +18,10 @@ namespace loki {
     std::filesystem::path root_path;
   };
 
-  class EngineApplication
+  class EngineApp
   {
   public:
-    virtual ~EngineApplication();
+    virtual ~EngineApp();
 
   public:
     auto launch(const std::shared_ptr<EngineSettings>& settings) -> int;

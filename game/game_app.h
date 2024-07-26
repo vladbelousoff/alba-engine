@@ -1,11 +1,11 @@
 #pragma once
 
-#include "engine/engine_application.h"
+#include "engine/engine_app.h"
 #include "engine/render/shader.h"
 #include "glm/detail/type_mat4x4.hpp"
 #include "glm/vec3.hpp"
 
-class ProjectApplication : public loki::EngineApplication
+class GameApp : public loki::EngineApp
 {
 protected:
   void post_init() override;

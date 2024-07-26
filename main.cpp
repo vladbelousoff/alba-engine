@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
 
-#include "project/project_application.h"
+#include "game/game_app.h"
 
 int
 main(int argc, char* argv[])
@@ -18,5 +18,5 @@ main(int argc, char* argv[])
   CLI11_PARSE(app, argc, argv)
 
   spdlog::info("Root: {}", absolute(settings->root_path).string());
-  return ProjectApplication{}.launch(settings);
+  return GameApp().launch(settings);
 }
