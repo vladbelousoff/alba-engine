@@ -2,6 +2,7 @@
 
 #include <spdlog/spdlog.h>
 
+#include <format>
 #include <shared_mutex>
 #include <string>
 #include <thread>
@@ -52,14 +53,5 @@ struct std::hash<loki::StringID>
   std::size_t operator()(const loki::StringID& string) const
   {
     return hash<std::size_t>{}(string.id);
-  }
-};
-
-template<>
-struct fmt::formatter<loki::StringID> : formatter<std::string>
-{
-  auto format(loki::StringID type, format_context& ctx)
-  {
-    return formatter<std::string>::format(type.to_string(), ctx);
   }
 };

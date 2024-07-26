@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <format>
 #include <spdlog/spdlog.h>
 #include <string>
 
@@ -60,16 +61,16 @@ namespace loki {
 } // namespace loki
 
 template<>
-struct fmt::formatter<loki::ShaderType> : formatter<std::string>
+struct std::formatter<loki::ShaderType> : std::formatter<std::string>
 {
-  auto format(loki::ShaderType type, format_context& ctx)
+  static auto format(const loki::ShaderType& type, format_context& ctx) -> decltype(ctx.out())
   {
     switch (type) {
       case loki::ShaderType::VERT:
-        return formatter<std::string>::format("loki::ShaderType::VERT", ctx);
+        return format_to(ctx.out(), "loki::ShaderType::VERT");
       case loki::ShaderType::FRAG:
-        return formatter<std::string>::format("loki::ShaderType::FRAG", ctx);
+        return format_to(ctx.out(), "loki::ShaderType::FRAG");
     }
-    return formatter<std::string>::format("unknown", ctx);
+    return format_to(ctx.out(), "Unknown");
   }
 };

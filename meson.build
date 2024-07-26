@@ -1,7 +1,7 @@
 project('loki', 'cpp',
         default_options : [
             'default_library=static',
-            'cpp_std=c++17',
+            'cpp_std=c++20',
         ])
 
 # Define the Winsock library dependency
