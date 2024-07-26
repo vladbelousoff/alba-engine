@@ -46,7 +46,8 @@ namespace loki {
 
 } // namespace loki
 
-template <> struct std::hash<loki::StringID>
+template<>
+struct std::hash<loki::StringID>
 {
   std::size_t operator()(const loki::StringID& string) const
   {
@@ -54,7 +55,8 @@ template <> struct std::hash<loki::StringID>
   }
 };
 
-template <> struct fmt::formatter<loki::StringID> : formatter<std::string>
+template<>
+struct fmt::formatter<loki::StringID> : formatter<std::string>
 {
   auto format(loki::StringID type, format_context& ctx)
   {

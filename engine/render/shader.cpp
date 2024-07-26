@@ -5,7 +5,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
 
-auto loki::ShaderManager::create_shader(const std::string& source, ShaderType type) -> loki::ShaderHandle
+auto
+loki::ShaderManager::create_shader(const std::string& source, ShaderType type) -> loki::ShaderHandle
 {
   uint32_t shader_id;
   switch (type) {
@@ -41,7 +42,8 @@ auto loki::ShaderManager::create_shader(const std::string& source, ShaderType ty
   return handle;
 }
 
-auto loki::ShaderManager::create_program(loki::ShaderHandle vert, loki::ShaderHandle frag) -> loki::ProgramHandle
+auto
+loki::ShaderManager::create_program(loki::ShaderHandle vert, loki::ShaderHandle frag) -> loki::ProgramHandle
 {
   GLuint shader_program = glCreateProgram();
   glAttachShader(shader_program, vert.id);
@@ -54,19 +56,22 @@ auto loki::ShaderManager::create_program(loki::ShaderHandle vert, loki::ShaderHa
   return handle;
 }
 
-auto loki::ShaderManager::use_program(loki::ProgramHandle handle, const std::function<void(const UniformManager& manager)>& callback) -> void
+auto
+loki::ShaderManager::use_program(loki::ProgramHandle handle, const std::function<void(const UniformManager& manager)>& callback) -> void
 {
   glUseProgram(handle.id);
   callback(UniformManager{ handle });
   glUseProgram(0);
 }
 
-auto loki::UniformManager::set_uniform(loki::StringID name, float value) const -> void
+auto
+loki::UniformManager::set_uniform(loki::StringID name, float value) const -> void
 {
   glUniform1f(glGetUniformLocation(handle.id, name.to_string().c_str()), value);
 }
 
-auto loki::UniformManager::set_uniform(loki::StringID name, const glm::mat4& mat) const -> void
+auto
+loki::UniformManager::set_uniform(loki::StringID name, const glm::mat4& mat) const -> void
 {
   glUniformMatrix4fv(glGetUniformLocation(handle.id, name.to_string().c_str()), 1, GL_FALSE, glm::value_ptr(mat));
 }

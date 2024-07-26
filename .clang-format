@@ -1,7 +1,7 @@
 # Created by https://github.com/vladbelousoff
 ---
 Language: Cpp
-BasedOnStyle: LLVM
+BasedOnStyle: Mozilla
 AlignAfterOpenBracket: false
 AlignConsecutiveMacros:
   Enabled: true

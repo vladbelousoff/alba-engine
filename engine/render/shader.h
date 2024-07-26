@@ -38,7 +38,7 @@ namespace loki {
   {
   public:
     explicit UniformManager(ProgramHandle handle)
-        : handle{ handle }
+      : handle{ handle }
     {
     }
 
@@ -59,7 +59,8 @@ namespace loki {
   };
 } // namespace loki
 
-template <> struct fmt::formatter<loki::ShaderType> : formatter<std::string>
+template<>
+struct fmt::formatter<loki::ShaderType> : formatter<std::string>
 {
   auto format(loki::ShaderType type, format_context& ctx)
   {

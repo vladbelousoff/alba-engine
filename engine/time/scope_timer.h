@@ -4,12 +4,13 @@
 
 namespace loki {
 
-  template <typename T> class ScopeTimer
+  template<typename T>
+  class ScopeTimer
   {
   public:
     explicit ScopeTimer(T& seconds)
-        : seconds{ seconds }
-        , start_timestamp{ glfwGetTime() }
+      : seconds{ seconds }
+      , start_timestamp{ glfwGetTime() }
     {
     }
 

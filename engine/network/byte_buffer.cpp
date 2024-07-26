@@ -5,18 +5,21 @@ loki::ByteBuffer::ByteBuffer()
   buffer.reserve(DEFAULT_SIZE);
 }
 
-void loki::ByteBuffer::append(const std::vector<loki::u8>& value)
+void
+loki::ByteBuffer::append(const std::vector<loki::u8>& value)
 {
   append<loki::u8>(value.size());
   buffer.insert(buffer.end(), value.begin(), value.end());
 }
 
-void loki::ByteBuffer::send(sockpp::tcp_connector& conn) const
+void
+loki::ByteBuffer::send(sockpp::tcp_connector& conn) const
 {
   conn.write(buffer.data(), buffer.size());
 }
 
-void loki::ByteBuffer::receive(sockpp::tcp_connector& conn)
+void
+loki::ByteBuffer::receive(sockpp::tcp_connector& conn)
 {
   buffer.resize(DEFAULT_SIZE);
 
@@ -31,7 +34,8 @@ void loki::ByteBuffer::receive(sockpp::tcp_connector& conn)
   }
 }
 
-void loki::ByteBuffer::reset()
+void
+loki::ByteBuffer::reset()
 {
   r_pos = 0;
   buffer.clear();

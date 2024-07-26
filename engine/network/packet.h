@@ -20,8 +20,8 @@ namespace loki {
 
   public:
     explicit PacketField(std::string_view name, Packet* pkt)
-        : name{ name }
-        , pkt{ *pkt }
+      : name{ name }
+      , pkt{ *pkt }
     {
       add_field_in_pkt();
     }
@@ -45,14 +45,15 @@ namespace loki {
     Packet& pkt;
   };
 
-  template <typename Type, size_t Size> class PacketFieldT : public PacketField
+  template<typename Type, size_t Size>
+  class PacketFieldT : public PacketField
   {
     using Self = PacketFieldT<Type, Size>;
 
   public:
     explicit PacketFieldT(std::string_view name, Packet* pkt)
-        : PacketField{ name, pkt }
-        , data{}
+      : PacketField{ name, pkt }
+      , data{}
     {
     }
 
@@ -93,20 +94,21 @@ namespace loki {
     std::array<Type, Size> data;
   };
 
-  template <typename Type> class PacketFieldT<Type, 1> : public PacketField
+  template<typename Type>
+  class PacketFieldT<Type, 1> : public PacketField
   {
     using Self = PacketFieldT<Type, 1>;
 
   public:
     explicit PacketFieldT(std::string_view name, Packet* pkt)
-        : PacketField{ name, pkt }
-        , value{}
+      : PacketField{ name, pkt }
+      , value{}
     {
     }
 
     explicit PacketFieldT(std::string_view name, Packet* pkt, Type value)
-        : PacketField{ name, pkt }
-        , value{ value }
+      : PacketField{ name, pkt }
+      , value{ value }
     {
     }
 
@@ -117,7 +119,8 @@ namespace loki {
     }
 
   public:
-    template <typename IncomingType> Self& operator<<(IncomingType new_value)
+    template<typename IncomingType>
+    Self& operator<<(IncomingType new_value)
     {
       value = static_cast<Type>(new_value);
       return *this;
@@ -149,7 +152,7 @@ namespace loki {
 
   public:
     explicit PacketFieldArray(std::string_view name, Packet* pkt)
-        : PacketField{ name, pkt }
+      : PacketField{ name, pkt }
     {
     }
 

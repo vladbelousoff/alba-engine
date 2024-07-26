@@ -6,7 +6,8 @@
 
 #include "project/project_application.h"
 
-int main(int argc, char* argv[])
+int
+main(int argc, char* argv[])
 {
   CLI::App app{ "loki Engine" };
   argv = app.ensure_utf8(argv);

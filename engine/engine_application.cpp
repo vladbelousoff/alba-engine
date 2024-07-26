@@ -12,7 +12,8 @@ loki::EngineApplication::~EngineApplication()
   }
 }
 
-auto loki::EngineApplication::launch(const std::shared_ptr<EngineSettings>& _settings) -> int
+auto
+loki::EngineApplication::launch(const std::shared_ptr<EngineSettings>& _settings) -> int
 {
   settings = _settings;
 
@@ -55,7 +56,8 @@ auto loki::EngineApplication::launch(const std::shared_ptr<EngineSettings>& _set
   return 0;
 }
 
-bool loki::EngineApplication::init()
+bool
+loki::EngineApplication::init()
 {
   if (!glfwInit()) {
     spdlog::error("Failed to initialize GLFW!");
@@ -113,7 +115,8 @@ bool loki::EngineApplication::init()
   return true;
 }
 
-void loki::EngineApplication::term()
+void
+loki::EngineApplication::term()
 {
   // Some ImGui cleanups here
   ImGui_ImplOpenGL3_Shutdown();

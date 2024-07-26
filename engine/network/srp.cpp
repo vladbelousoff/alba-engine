@@ -42,7 +42,8 @@ loki::SRP::~SRP()
   }
 }
 
-void loki::SRP::hash_sha1(const std::vector<u8>& input, std::array<u8, 20>& output)
+void
+loki::SRP::hash_sha1(const std::vector<u8>& input, std::array<u8, 20>& output)
 {
   EVP_MD_CTX* ctx = EVP_MD_CTX_new();
   EVP_DigestInit_ex(ctx, EVP_sha1(), nullptr);
@@ -51,7 +52,8 @@ void loki::SRP::hash_sha1(const std::vector<u8>& input, std::array<u8, 20>& outp
   EVP_MD_CTX_free(ctx);
 }
 
-void loki::SRP::generate(const std::array<loki::u8, 32>& salt, const std::array<loki::u8, 32>& in_B, std::string_view username, std::string_view password)
+void
+loki::SRP::generate(const std::array<loki::u8, 32>& salt, const std::array<loki::u8, 32>& in_B, std::string_view username, std::string_view password)
 {
   // Generate x = H(salt | H(username | ":" | password))
   std::vector<u8> username_password_hash_input;
@@ -130,12 +132,14 @@ void loki::SRP::generate(const std::array<loki::u8, 32>& salt, const std::array<
   BN_CTX_free(ctx);
 }
 
-const std::array<loki::u8, SHA_DIGEST_LENGTH>& loki::SRP::get_M1() const
+const std::array<loki::u8, SHA_DIGEST_LENGTH>&
+loki::SRP::get_M1() const
 {
   return M1;
 }
 
-const std::array<loki::u8, 32>& loki::SRP::get_A() const
+const std::array<loki::u8, 32>&
+loki::SRP::get_A() const
 {
   return A_bin;
 }

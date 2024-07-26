@@ -21,7 +21,8 @@ namespace loki {
   public:
     void reset();
 
-    template <typename T, typename U> void append(U value)
+    template<typename T, typename U>
+    void append(U value)
     {
       const T converted_value = static_cast<T>(value);
       auto bytes = reinterpret_cast<const std::uint8_t*>(&converted_value);
@@ -30,19 +31,22 @@ namespace loki {
 
     void append(const std::vector<loki::u8>& value);
 
-    template <typename Type, size_t Size> void append(const std::array<Type, Size>& value)
+    template<typename Type, size_t Size>
+    void append(const std::array<Type, Size>& value)
     {
       buffer.insert(buffer.end(), value.begin(), value.end());
     }
 
-    template <typename T> T read()
+    template<typename T>
+    T read()
     {
       T value;
       read(&value, sizeof(T));
       return value;
     }
 
-    template <typename Type, size_t Size> void read(std::array<Type, Size>& arr)
+    template<typename Type, size_t Size>
+    void read(std::array<Type, Size>& arr)
     {
       read(arr.data(), Size * sizeof(Type));
     }

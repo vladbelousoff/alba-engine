@@ -8,7 +8,7 @@ namespace loki {
   {
   public:
     explicit MPQFile(MPQArchive& archive)
-        : archive{ archive } {};
+      : archive{ archive } {};
 
   private:
     MPQArchive& archive;

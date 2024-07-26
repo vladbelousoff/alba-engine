@@ -85,7 +85,8 @@ struct
   float phi{ 5.182f }, theta{ 5.716f };
 } camera;
 
-void ProjectApplication::post_init()
+void
+ProjectApplication::post_init()
 {
   sockpp::initialize();
 
@@ -167,7 +168,8 @@ void ProjectApplication::post_init()
 #endif
 }
 
-void ProjectApplication::update()
+void
+ProjectApplication::update()
 {
   float x = camera.distance_to_origin * glm::sin(camera.phi) * glm::cos(camera.theta);
   float y = camera.distance_to_origin * glm::cos(camera.phi);
@@ -219,11 +221,11 @@ struct PaketAuthChallengeResponse : public loki::Packet
   LOKI_DECLARE_PACKET_FIELD(command, loki::i8);
   LOKI_DECLARE_PACKET_FIELD(protocol_version, loki::i8);
   LOKI_DECLARE_PACKET_FIELD(status, loki::i8);
-  LOKI_DECLARE_PACKET_ARRAY(srp_B, loki::u8, 32);
-  LOKI_DECLARE_PACKET_BLOCK(srp_g);
-  LOKI_DECLARE_PACKET_BLOCK(srp_N);
-  LOKI_DECLARE_PACKET_ARRAY(crc_salt, loki::u8, 32);
-  LOKI_DECLARE_PACKET_ARRAY(unknown, loki::u8, 16);
+  LOKI_DECLARE_PACKET_ARRAY(B, loki::u8, 32);
+  LOKI_DECLARE_PACKET_BLOCK(g);
+  LOKI_DECLARE_PACKET_BLOCK(N);
+  LOKI_DECLARE_PACKET_ARRAY(s, loki::u8, 32);
+  LOKI_DECLARE_PACKET_ARRAY(version_challenge, loki::u8, 16);
   LOKI_DECLARE_PACKET_FIELD(two_factor_enabled, loki::i8);
 };
 
@@ -237,7 +239,8 @@ struct PaketLogonProofRequest : public loki::Packet
   LOKI_DECLARE_PACKET_FIELD(two_factor_enabled, loki::i8);
 };
 
-void ProjectApplication::draw_ui()
+void
+ProjectApplication::draw_ui()
 {
   if (ImGui::BeginMainMenuBar()) {
     if (ImGui::BeginMenu("File")) {
@@ -331,14 +334,15 @@ void ProjectApplication::draw_ui()
           spdlog::info("{}: {}", field.get_name(), field.to_string());
         });
 
-        auto& srp_N = auth_response.srp_N.get();
-        auto& srp_g = auth_response.srp_g.get();
+        auto& srp_N = auth_response.N.get();
+        auto& srp_g = auth_response.g.get();
 
         loki::SRP srp{ srp_N, srp_g[0] };
 
-        auto& srp_B = auth_response.srp_B.get();
-        auto& crc_salt = auth_response.crc_salt.get();
-        srp.generate(crc_salt, srp_B, username_uppercase, password_uppercase);
+        auto& srp_B = auth_response.B.get();
+        auto& srp_s = auth_response.s.get();
+
+        srp.generate(srp_s, srp_B, username, password);
 
         PaketLogonProofRequest logon_proof_request;
         logon_proof_request.command << 1;
@@ -365,7 +369,8 @@ void ProjectApplication::draw_ui()
   ImGui::End();
 }
 
-void ProjectApplication::draw()
+void
+ProjectApplication::draw()
 {
   glClearColor(background.r, background.g, background.b, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
