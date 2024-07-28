@@ -239,6 +239,16 @@ struct PaketLogonProofRequest : public loki::Packet
   LOKI_DECLARE_PACKET_FIELD(two_factor_enabled, loki::i8);
 };
 
+struct PaketLogonProofResponse : public loki::Packet
+{
+  LOKI_DECLARE_PACKET_FIELD(command, loki::i8);
+  LOKI_DECLARE_PACKET_FIELD(status, loki::i8);
+  LOKI_DECLARE_PACKET_ARRAY(server_M, loki::u8, 20);
+  LOKI_DECLARE_PACKET_FIELD(acount_flags, loki::u32);
+  LOKI_DECLARE_PACKET_FIELD(hardware_survey_id, loki::u32);
+  LOKI_DECLARE_PACKET_FIELD(unknown_flags, loki::u16);
+};
+
 void
 GameApp::draw_ui()
 {
@@ -338,7 +348,7 @@ GameApp::draw_ui()
         loki::BigNum g = loki::BigNum::from_binary(*auth_response.g);
         loki::SRP6 srp_client(N, g);
 
-        auto [client_M, crc_hash] = srp_client.generate(*auth_response.s, *auth_response.B, username_uppercase, password_uppercase);
+        auto [session_key, client_M, crc_hash] = srp_client.generate(*auth_response.s, *auth_response.B, username_uppercase, password_uppercase);
 
         PaketLogonProofRequest logon_proof_request;
         logon_proof_request.command.set(1);
@@ -356,6 +366,19 @@ GameApp::draw_ui()
         byte_buffer.reset();
         logon_proof_request.save_buffer(byte_buffer);
         byte_buffer.send(conn);
+
+        byte_buffer.reset();
+        byte_buffer.receive(conn);
+        PaketLogonProofResponse logon_proof_response;
+        logon_proof_response.load_buffer(byte_buffer);
+
+        spdlog::info("---- Logon Proof Response ----");
+        logon_proof_response.for_each_field([](const loki::PacketField& field) {
+          spdlog::info("{}: {}", field.get_name(), field.to_string());
+        });
+
+        auto server_M = loki::SHA1::get_digest_of(srp_client.get_A(), client_M, session_key);
+        DEBUG_ASSERT(*logon_proof_response.server_M == server_M);
 
       } else {
         spdlog::error("Error connecting to server at {}", sockpp::inet_address(host, port).to_string());

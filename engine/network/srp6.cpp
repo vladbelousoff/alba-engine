@@ -50,7 +50,7 @@ loki::SRP6::SHA1_interleave(const loki::SRP6::EphemeralKey& S)
   return K;
 }
 
-std::pair<loki::SHA1::Digest, loki::SHA1::Digest>
+std::tuple<loki::SRP6::SessionKey, loki::SHA1::Digest, loki::SHA1::Digest>
 loki::SRP6::generate(const Salt& salt, const EphemeralKey& B, std::string_view I, std::string_view P)
 {
   auto x = BigNum::from_binary(SHA1::get_digest_of(salt, SHA1::get_digest_of(I, ":", P)));
@@ -74,6 +74,6 @@ loki::SRP6::generate(const Salt& salt, const EphemeralKey& B, std::string_view I
   SHA1::Digest client_M = SHA1::get_digest_of(Ng_hash, I_hash, salt, A, B, K);
   SHA1::Digest crc_hash = SHA1::get_digest_of(A, client_M, K);
 
-  return { client_M, crc_hash };
+  return { K, client_M, crc_hash };
 }
 
