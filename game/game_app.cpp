@@ -1,4 +1,4 @@
-#include "engine/network/srp.h"
+#include "engine/network/srp6.h"
 #include "sockpp/tcp_connector.h"
 #include "sockpp/version.h"
 
@@ -213,7 +213,7 @@ struct PaketAuthChallengeRequest : public loki::Packet
   LOKI_DECLARE_PACKET_ARRAY(country, loki::u8, 4);
   LOKI_DECLARE_PACKET_FIELD(timezone, loki::u32);
   LOKI_DECLARE_PACKET_FIELD(ip_address, loki::u32);
-  LOKI_DECLARE_PACKET_BLOCK(spi);
+  LOKI_DECLARE_PACKET_BLOCK(login);
 };
 
 struct PaketAuthChallengeResponse : public loki::Packet
@@ -225,7 +225,7 @@ struct PaketAuthChallengeResponse : public loki::Packet
   LOKI_DECLARE_PACKET_BLOCK(g);
   LOKI_DECLARE_PACKET_BLOCK(N);
   LOKI_DECLARE_PACKET_ARRAY(s, loki::u8, 32);
-  LOKI_DECLARE_PACKET_ARRAY(version_challenge, loki::u8, 16);
+  LOKI_DECLARE_PACKET_ARRAY(crc_salt, loki::u8, 16);
   LOKI_DECLARE_PACKET_FIELD(two_factor_enabled, loki::i8);
 };
 
@@ -233,8 +233,8 @@ struct PaketLogonProofRequest : public loki::Packet
 {
   LOKI_DECLARE_PACKET_FIELD(command, loki::i8);
   LOKI_DECLARE_PACKET_ARRAY(A, loki::u8, 32);
-  LOKI_DECLARE_PACKET_ARRAY(M1, loki::u8, 20);
-  LOKI_DECLARE_PACKET_ARRAY(crc_hash, loki::u8, 32);
+  LOKI_DECLARE_PACKET_ARRAY(client_M, loki::u8, 20);
+  LOKI_DECLARE_PACKET_ARRAY(crc_hash, loki::u8, 20);
   LOKI_DECLARE_PACKET_FIELD(number_of_keys, loki::i8);
   LOKI_DECLARE_PACKET_FIELD(two_factor_enabled, loki::i8);
 };
@@ -315,7 +315,7 @@ GameApp::draw_ui()
         auth_request.country.set(config::locale);
         auth_request.timezone.set(config::timezone);
         auth_request.ip_address.set(0);
-        auth_request.spi.set(username_uppercase);
+        auth_request.login.set(username_uppercase);
 
         spdlog::info("---- Auth Request ----");
         auth_request.for_each_field([](const loki::PacketField& field) {
@@ -334,20 +334,17 @@ GameApp::draw_ui()
           spdlog::info("{}: {}", field.get_name(), field.to_string());
         });
 
-        auto& srp_N = auth_response.N.get();
-        auto& srp_g = auth_response.g.get();
+        loki::BigNum N = loki::BigNum::from_binary(*auth_response.N);
+        loki::BigNum g = loki::BigNum::from_binary(*auth_response.g);
+        loki::SRP6 srp_client(N, g);
 
-        loki::SRP srp{ srp_N, srp_g[0] };
-
-        auto& srp_B = auth_response.B.get();
-        auto& srp_s = auth_response.s.get();
-
-        srp.generate(srp_s, srp_B, username, password);
+        srp_client.generate(*auth_response.s, *auth_response.B, username_uppercase, password_uppercase);
 
         PaketLogonProofRequest logon_proof_request;
         logon_proof_request.command.set(1);
-        logon_proof_request.A.get() = srp.get_A();
-        logon_proof_request.M1.get() = srp.get_M1();
+        logon_proof_request.A.set(srp_client.get_A());
+        logon_proof_request.client_M.set(srp_client.get_client_M());
+        logon_proof_request.crc_hash.set(srp_client.get_crc_hash());
         logon_proof_request.number_of_keys.set(0);
         logon_proof_request.two_factor_enabled.set(0);
 

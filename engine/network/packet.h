@@ -61,6 +61,18 @@ namespace loki {
       std::reverse_copy(view.begin(), view.end(), data.begin());
     }
 
+    void set(const std::vector<u8>& view)
+    {
+      DEBUG_ASSERT(view.size() <= Size);
+      std::copy(view.begin(), view.end(), data.begin());
+    }
+
+    void set(const std::array<u8, Size>& view)
+    {
+      DEBUG_ASSERT(view.size() <= Size);
+      std::copy(view.begin(), view.end(), data.begin());
+    }
+
   public:
     std::string to_string() const override
     {
@@ -74,6 +86,11 @@ namespace loki {
     std::array<Type, Size>& get()
     {
       return data;
+    }
+
+    std::array<Type, Size>& operator*()
+    {
+      return get();
     }
 
   protected:
@@ -119,9 +136,14 @@ namespace loki {
       value = new_value;
     }
 
-    Type get() const
+    Type& get()
     {
       return value;
+    }
+
+    Type& operator*()
+    {
+      return get();
     }
 
   protected:
@@ -157,6 +179,11 @@ namespace loki {
     const std::vector<loki::u8>& get()
     {
       return data;
+    }
+
+    const std::vector<loki::u8>& operator*()
+    {
+      return get();
     }
 
     std::string to_string() const override
