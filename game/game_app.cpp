@@ -252,6 +252,7 @@ struct PaketLogonProofResponse : public loki::Packet
 void
 GameApp::draw_ui()
 {
+#if 0
   if (ImGui::BeginMainMenuBar()) {
     if (ImGui::BeginMenu("File")) {
       if (ImGui::MenuItem("Create")) {
@@ -280,6 +281,7 @@ GameApp::draw_ui()
     ImGui::SliderFloat("Distance", &camera.distance_to_origin, 0.0f, 100.0f);
   }
   ImGui::End();
+#endif
 
   if (ImGui::Begin("Auth")) {
     static char host[32] = "localhost";
