@@ -338,13 +338,13 @@ GameApp::draw_ui()
         loki::BigNum g = loki::BigNum::from_binary(*auth_response.g);
         loki::SRP6 srp_client(N, g);
 
-        srp_client.generate(*auth_response.s, *auth_response.B, username_uppercase, password_uppercase);
+        auto [client_M, crc_hash] = srp_client.generate(*auth_response.s, *auth_response.B, username_uppercase, password_uppercase);
 
         PaketLogonProofRequest logon_proof_request;
         logon_proof_request.command.set(1);
         logon_proof_request.A.set(srp_client.get_A());
-        logon_proof_request.client_M.set(srp_client.get_client_M());
-        logon_proof_request.crc_hash.set(srp_client.get_crc_hash());
+        logon_proof_request.client_M.set(client_M);
+        logon_proof_request.crc_hash.set(crc_hash);
         logon_proof_request.number_of_keys.set(0);
         logon_proof_request.two_factor_enabled.set(0);
 

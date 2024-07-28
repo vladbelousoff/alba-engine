@@ -34,21 +34,11 @@ namespace loki {
     ~SRP6() = default;
 
   public:
-    void generate(const Salt& salt, const EphemeralKey& B, std::string_view I, std::string_view P);
+    std::pair<SHA1::Digest, SHA1::Digest> generate(const Salt& salt, const EphemeralKey& B, std::string_view I, std::string_view P);
 
     const EphemeralKey& get_A() const
     {
       return A;
-    }
-
-    const SHA1::Digest& get_client_M() const
-    {
-      return client_M;
-    }
-
-    const SHA1::Digest& get_crc_hash() const
-    {
-      return crc_hash;
     }
 
   private:
@@ -60,8 +50,6 @@ namespace loki {
     BigNum a;
     BigNum k;
     EphemeralKey A;
-    SHA1::Digest client_M{};
-    SHA1::Digest crc_hash{};
   };
 
 } // namespace loki
