@@ -66,6 +66,18 @@ struct PaketAuthLogonProofResponse : PacketAuth
   LOKI_DECLARE_PACKET_FIELD(unknown_flags, loki::u16);
 };
 
+struct PacketAuthRealmListRequest : PacketAuth
+{
+  LOKI_DECLARE_PACKET_FIELD(unknown, loki::u32);
+};
+
+struct PacketAuthRealmListHead : PacketAuth
+{
+  LOKI_DECLARE_PACKET_FIELD(packet_size, loki::u16);
+  LOKI_DECLARE_PACKET_FIELD(uknown, loki::u32);
+  LOKI_DECLARE_PACKET_FIELD(number_of_realms, loki::u16);
+};
+
 loki::AuthConnection::AuthConnection(std::string_view host, loki::u16 port)
   : connector({ std::string(host), port })
   , thread()
@@ -220,4 +232,32 @@ void
 loki::AuthConnection::handle_realm_list()
 {
   spdlog::info("Checking ream list...");
+
+  {
+    PacketAuthRealmListRequest pkt;
+    pkt.command.set(0x10); // Command: Realm List (0x10)
+    pkt.unknown.set(0);
+
+    spdlog::info("[Realm List]");
+    pkt.for_each_field([](const loki::PacketField& field) {
+      spdlog::info("{}: {}", field.get_name(), field.to_string());
+    });
+
+    pkt.save_buffer(buffer);
+    buffer.send(socket);
+  }
+
+  {
+    PacketAuthRealmListHead pkt_head;
+    buffer.recv(socket);
+    pkt_head.load_buffer(buffer);
+
+    spdlog::info("Number of realms: {}", *pkt_head.number_of_realms);
+    for (int i = 0; i < *pkt_head.number_of_realms; ++i) {
+      PacketAuthRealmListBody pkt_body;
+      pkt_body.load_buffer(buffer);
+
+      spdlog::info("Realm: {}", *pkt_body.name);
+    }
+  }
 }

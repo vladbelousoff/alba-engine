@@ -19,6 +19,19 @@ namespace loki {
     REALM_LIST = 2,
   };
 
+  struct PacketAuthRealmListBody : loki::Packet
+  {
+    LOKI_DECLARE_PACKET_FIELD(type, loki::u8);
+    LOKI_DECLARE_PACKET_FIELD(locked, loki::u8);
+    LOKI_DECLARE_PACKET_FIELD(flags, loki::u8);
+    LOKI_DECLARE_PACKET_STRING(name);
+    LOKI_DECLARE_PACKET_STRING(server_socket);
+    LOKI_DECLARE_PACKET_FIELD(population_level, loki::u32);
+    LOKI_DECLARE_PACKET_FIELD(number_of_characters, loki::u8);
+    LOKI_DECLARE_PACKET_FIELD(category, loki::u8);
+    LOKI_DECLARE_PACKET_FIELD(realm_id, loki::u8);
+  };
+
   class AuthConnection
   {
   public:
@@ -44,6 +57,7 @@ namespace loki {
     std::atomic<AuthConnectionState> state;
     std::optional<loki::SRP6> srp6;
     ByteBuffer buffer;
+    std::vector<PacketAuthRealmListBody> realms;
   };
 
 } // namespace loki

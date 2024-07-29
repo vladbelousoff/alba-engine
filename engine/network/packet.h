@@ -8,6 +8,7 @@
 #define LOKI_DECLARE_PACKET_FIELD(NAME, TYPE)       loki::PacketFieldT<TYPE, 0x01>(NAME){ #NAME, this };
 #define LOKI_DECLARE_PACKET_ARRAY(NAME, TYPE, SIZE) loki::PacketFieldT<TYPE, SIZE>(NAME){ #NAME, this };
 #define LOKI_DECLARE_PACKET_BLOCK(NAME)             loki::PacketFieldArray NAME{ #NAME, this };
+#define LOKI_DECLARE_PACKET_STRING(NAME)            loki::PacketFieldString NAME{ #NAME, this };
 
 namespace loki {
 
@@ -208,6 +209,57 @@ namespace loki {
     }
 
     std::vector<loki::u8> data;
+  };
+
+  class PacketFieldString : public PacketField
+  {
+  public:
+    explicit PacketFieldString(std::string_view name, Packet* pkt)
+      : PacketField{ name, pkt }
+    {
+    }
+
+  public:
+    void set(std::string_view view)
+    {
+      data.resize(view.size());
+      std::memcpy(data.data(), view.data(), view.size());
+    }
+
+    const std::string& get()
+    {
+      return data;
+    }
+
+    const std::string& operator*()
+    {
+      return get();
+    }
+
+    std::string to_string() const override
+    {
+      return data;
+    }
+
+  protected:
+    void save(ByteBuffer& buffer) const override
+    {
+      buffer.append(data);
+    }
+
+    void load(ByteBuffer& buffer) override
+    {
+      std::ostringstream oss;
+      char ch;
+      do {
+        ch = buffer.read<char>();
+        oss << ch;
+      } while (ch != 0);
+      
+      data = oss.str();
+    }
+
+    std::string data;
   };
 
   class Packet

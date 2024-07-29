@@ -30,6 +30,7 @@ namespace loki {
     }
 
     void append(const std::vector<loki::u8>& value);
+    void append(std::string_view value);
 
     template<typename Type, size_t Size>
     void append(const std::array<Type, Size>& value)

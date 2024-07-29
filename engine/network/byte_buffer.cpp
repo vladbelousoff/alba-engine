@@ -13,6 +13,12 @@ loki::ByteBuffer::append(const std::vector<loki::u8>& value)
 }
 
 void
+loki::ByteBuffer::append(std::string_view value)
+{
+  buffer.insert(buffer.end(), value.begin(), value.end());
+}
+
+void
 loki::ByteBuffer::send(sockpp::tcp_socket& conn) const
 {
   conn.write(buffer.data(), buffer.size());
