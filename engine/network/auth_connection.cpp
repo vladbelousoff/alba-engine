@@ -78,6 +78,19 @@ struct PacketAuthRealmListHead : PacketAuth
   LOKI_DECLARE_PACKET_FIELD(number_of_realms, loki::u16);
 };
 
+struct PacketAuthRealmListBody : loki::Packet
+{
+  LOKI_DECLARE_PACKET_FIELD(type, loki::u8);
+  LOKI_DECLARE_PACKET_FIELD(locked, loki::u8);
+  LOKI_DECLARE_PACKET_FIELD(flags, loki::u8);
+  LOKI_DECLARE_PACKET_STRING(name);
+  LOKI_DECLARE_PACKET_STRING(server_socket);
+  LOKI_DECLARE_PACKET_FIELD(population_level, loki::u32);
+  LOKI_DECLARE_PACKET_FIELD(number_of_characters, loki::u8);
+  LOKI_DECLARE_PACKET_FIELD(category, loki::u8);
+  LOKI_DECLARE_PACKET_FIELD(realm_id, loki::u8);
+};
+
 loki::AuthConnection::AuthConnection(std::string_view host, loki::u16 port)
   : connector({ std::string(host), port })
   , thread()
@@ -233,31 +246,42 @@ loki::AuthConnection::handle_realm_list()
 {
   spdlog::info("Checking ream list...");
 
+  PacketAuthRealmListRequest pkt;
+  pkt.command.set(0x10); // Command: Realm List (0x10)
+  pkt.unknown.set(0);
+
+  spdlog::info("[Realm List]");
+  pkt.for_each_field([](const loki::PacketField& field) {
+    spdlog::info("{}: {}", field.get_name(), field.to_string());
+  });
+
+  pkt.save_buffer(buffer);
+  buffer.send(socket);
+
+  PacketAuthRealmListHead pkt_head;
+  buffer.recv(socket);
+  pkt_head.load_buffer(buffer);
+
   {
-    PacketAuthRealmListRequest pkt;
-    pkt.command.set(0x10); // Command: Realm List (0x10)
-    pkt.unknown.set(0);
-
-    spdlog::info("[Realm List]");
-    pkt.for_each_field([](const loki::PacketField& field) {
-      spdlog::info("{}: {}", field.get_name(), field.to_string());
-    });
-
-    pkt.save_buffer(buffer);
-    buffer.send(socket);
+    std::unique_lock lock(realms_mutex);
+    realms.clear();
   }
 
-  {
-    PacketAuthRealmListHead pkt_head;
-    buffer.recv(socket);
-    pkt_head.load_buffer(buffer);
-
-    spdlog::info("Number of realms: {}", *pkt_head.number_of_realms);
-    for (int i = 0; i < *pkt_head.number_of_realms; ++i) {
-      PacketAuthRealmListBody pkt_body;
-      pkt_body.load_buffer(buffer);
-
-      spdlog::info("Realm: {}", *pkt_body.name);
+  for (int i = 0; i < *pkt_head.number_of_realms; ++i) {
+    PacketAuthRealmListBody pkt_body;
+    pkt_body.load_buffer(buffer);
+    {
+      std::unique_lock lock(realms_mutex);
+      Realm& realm = realms.emplace_back();
+      realm.name = *pkt_body.name;
+      realm.server_socket = *pkt_body.server_socket;
     }
   }
+}
+
+auto
+loki::AuthConnection::get_realms() const -> std::vector<Realm>
+{
+  std::shared_lock lock(realms_mutex);
+  return realms;
 }

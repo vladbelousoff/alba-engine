@@ -255,7 +255,7 @@ namespace loki {
         ch = buffer.read<char>();
         oss << ch;
       } while (ch != 0);
-      
+
       data = oss.str();
     }
 
@@ -265,6 +265,12 @@ namespace loki {
   class Packet
   {
     friend class PacketField;
+
+  public:
+    Packet() = default;
+    
+    Packet(const Packet& other) = delete;
+    Packet& operator=(const Packet& other) = delete;
 
   public:
     void save_buffer(loki::ByteBuffer& buffer) const;

@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <queue>
+#include <shared_mutex>
 #include <thread>
 
 #include "engine/utils/types.h"
@@ -19,27 +20,22 @@ namespace loki {
     REALM_LIST = 2,
   };
 
-  struct PacketAuthRealmListBody : loki::Packet
-  {
-    LOKI_DECLARE_PACKET_FIELD(type, loki::u8);
-    LOKI_DECLARE_PACKET_FIELD(locked, loki::u8);
-    LOKI_DECLARE_PACKET_FIELD(flags, loki::u8);
-    LOKI_DECLARE_PACKET_STRING(name);
-    LOKI_DECLARE_PACKET_STRING(server_socket);
-    LOKI_DECLARE_PACKET_FIELD(population_level, loki::u32);
-    LOKI_DECLARE_PACKET_FIELD(number_of_characters, loki::u8);
-    LOKI_DECLARE_PACKET_FIELD(category, loki::u8);
-    LOKI_DECLARE_PACKET_FIELD(realm_id, loki::u8);
-  };
-
   class AuthConnection
   {
+  public:
+    struct Realm
+    {
+      std::string name;
+      std::string server_socket;
+    };
+
   public:
     explicit AuthConnection(std::string_view host, u16 port);
     ~AuthConnection();
 
   public:
     void login(std::string_view username, std::string_view password);
+    auto get_realms() const -> std::vector<Realm>;
 
   private:
     void handle_connection(sockpp::tcp_socket sock);
@@ -57,7 +53,8 @@ namespace loki {
     std::atomic<AuthConnectionState> state;
     std::optional<loki::SRP6> srp6;
     ByteBuffer buffer;
-    std::vector<PacketAuthRealmListBody> realms;
+    mutable std::shared_mutex realms_mutex;
+    std::vector<Realm> realms;
   };
 
 } // namespace loki

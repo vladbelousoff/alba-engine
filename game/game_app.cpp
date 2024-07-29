@@ -62,7 +62,28 @@ GameApp::draw_ui()
       auth_conn = std::make_unique<loki::AuthConnection>(host, (loki::u16)port);
       auth_conn->login(username, password);
     }
+
+    if (auth_conn) {
+      auto realms = auth_conn->get_realms();
+      if (ImGui::BeginTable("Realms", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
+        // Table headers
+        ImGui::TableSetupColumn("Name");
+        ImGui::TableSetupColumn("Server Socket");
+        ImGui::TableHeadersRow();
+
+        for (const auto& realm : realms) {
+          ImGui::TableNextRow();
+          ImGui::TableSetColumnIndex(0);
+          ImGui::Text("%s", realm.name.c_str());
+          ImGui::TableSetColumnIndex(1);
+          ImGui::Text("%s", realm.server_socket.c_str());
+        }
+
+        ImGui::EndTable();
+      }
+    }
   }
+
   ImGui::End();
 }
 
