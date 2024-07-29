@@ -28,6 +28,7 @@ namespace loki {
 
   protected:
     virtual void post_init() = 0;
+    virtual void pre_term() = 0;
     virtual void update() = 0;
     virtual void draw() = 0;
     virtual void draw_ui() = 0;

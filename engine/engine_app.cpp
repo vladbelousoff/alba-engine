@@ -118,6 +118,8 @@ loki::EngineApp::init()
 void
 loki::EngineApp::term()
 {
+  pre_term();
+
   // Some ImGui cleanups here
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();

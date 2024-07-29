@@ -58,8 +58,8 @@ namespace loki {
       r_pos += n;
     }
 
-    void send(sockpp::tcp_connector& conn) const;
-    void receive(sockpp::tcp_connector& conn);
+    void send(sockpp::tcp_socket& conn) const;
+    void recv(sockpp::tcp_socket& conn);
 
   protected:
     std::vector<loki::u8> buffer;

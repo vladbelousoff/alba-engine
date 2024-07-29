@@ -13,13 +13,13 @@ loki::ByteBuffer::append(const std::vector<loki::u8>& value)
 }
 
 void
-loki::ByteBuffer::send(sockpp::tcp_connector& conn) const
+loki::ByteBuffer::send(sockpp::tcp_socket& conn) const
 {
   conn.write(buffer.data(), buffer.size());
 }
 
 void
-loki::ByteBuffer::receive(sockpp::tcp_connector& conn)
+loki::ByteBuffer::recv(sockpp::tcp_socket& conn)
 {
   buffer.resize(DEFAULT_SIZE);
 

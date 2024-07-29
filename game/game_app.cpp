@@ -4,6 +4,8 @@
 
 #include "game_app.h"
 
+#include <utility>
+
 #include "engine/network/byte_buffer.h"
 #include "engine/network/packet.h"
 #include "engine/utils/types.h"
@@ -169,6 +171,14 @@ GameApp::post_init()
 }
 
 void
+GameApp::pre_term()
+{
+  for (auto&& thread : connection_threads) {
+    thread.join();
+  }
+}
+
+void
 GameApp::update()
 {
   float x = camera.distance_to_origin * glm::sin(camera.phi) * glm::cos(camera.theta);
@@ -249,6 +259,96 @@ struct PaketLogonProofResponse : public loki::Packet
   LOKI_DECLARE_PACKET_FIELD(unknown_flags, loki::u16);
 };
 
+static void
+handle_connection(sockpp::tcp_socket sock, std::string username, std::string password)
+{
+  auto to_uppercase = [](std::string& string) {
+    std::transform(string.begin(), string.end(), string.begin(), ::toupper);
+  };
+
+  spdlog::info("Created a connection from {}", sock.address().to_string());
+  spdlog::info("Created a connection to {}", sock.peer_address().to_string());
+
+  std::string username_uppercase = std::string(std::move(username));
+  to_uppercase(username_uppercase);
+
+  std::string password_uppercase = std::string(std::move(password));
+  to_uppercase(password_uppercase);
+
+  loki::ByteBuffer byte_buffer{};
+
+  PaketAuthChallengeRequest auth_request;
+  auth_request.command.set(0);
+  auth_request.protocol_version.set(8);
+  auth_request.packet_size.set(static_cast<loki::i16>(30 + username_uppercase.length()));
+  auth_request.game_name.set(config::game);
+  auth_request.major_version.set(config::major_version);
+  auth_request.minor_version.set(config::minor_version);
+  auth_request.patch_version.set(config::patch_version);
+  auth_request.build.set(config::build);
+  auth_request.platform.set(config::platform);
+  auth_request.os.set(config::os);
+  auth_request.country.set(config::locale);
+  auth_request.timezone.set(config::timezone);
+  auth_request.ip_address.set(0);
+  auth_request.login.set(username_uppercase);
+
+  spdlog::info("---- Auth Request ----");
+  auth_request.for_each_field([](const loki::PacketField& field) {
+    spdlog::info("{}: {}", field.get_name(), field.to_string());
+  });
+
+  auth_request.save_buffer(byte_buffer);
+  byte_buffer.send(sock);
+
+  PaketAuthChallengeResponse auth_response;
+  byte_buffer.recv(sock);
+  auth_response.load_buffer(byte_buffer);
+
+  spdlog::info("---- Auth Response ----");
+  auth_response.for_each_field([](const loki::PacketField& field) {
+    spdlog::info("{}: {}", field.get_name(), field.to_string());
+  });
+
+  loki::BigNum N = loki::BigNum::from_binary(*auth_response.N);
+  loki::BigNum g = loki::BigNum::from_binary(*auth_response.g);
+  loki::SRP6 srp_client(N, g);
+
+  auto [session_key, client_M, crc_hash] = srp_client.generate(*auth_response.s, *auth_response.B, username_uppercase, password_uppercase);
+
+  PaketLogonProofRequest logon_proof_request;
+  logon_proof_request.command.set(1);
+  logon_proof_request.A.set(srp_client.get_A());
+  logon_proof_request.client_M.set(client_M);
+  logon_proof_request.crc_hash.set(crc_hash);
+  logon_proof_request.number_of_keys.set(0);
+  logon_proof_request.two_factor_enabled.set(0);
+
+  spdlog::info("---- Logon Proof Request ----");
+  logon_proof_request.for_each_field([](const loki::PacketField& field) {
+    spdlog::info("{}: {}", field.get_name(), field.to_string());
+  });
+
+  byte_buffer.reset();
+  logon_proof_request.save_buffer(byte_buffer);
+  byte_buffer.send(sock);
+
+  byte_buffer.reset();
+  byte_buffer.recv(sock);
+  PaketLogonProofResponse logon_proof_response;
+  logon_proof_response.load_buffer(byte_buffer);
+
+  spdlog::info("---- Logon Proof Response ----");
+  logon_proof_response.for_each_field([](const loki::PacketField& field) {
+    spdlog::info("{}: {}", field.get_name(), field.to_string());
+  });
+
+  auto server_M = loki::SHA1::get_digest_of(srp_client.get_A(), client_M, session_key);
+  DEBUG_ASSERT(*logon_proof_response.server_M == server_M);
+
+  sock.shutdown();
+}
+
 void
 GameApp::draw_ui()
 {
@@ -293,95 +393,17 @@ GameApp::draw_ui()
     static char password[32] = "test";
     ImGui::InputText("Password", password, sizeof(password));
 
-    auto to_uppercase = [](std::string& string) {
-      std::transform(string.begin(), string.end(), string.begin(), ::toupper);
-    };
-
     if (ImGui::Button("Connect")) {
       spdlog::info("Connecting to auth-server @{}:{}...", host, port);
 
       sockpp::tcp_connector conn({ host, (std::uint16_t)port });
       if (conn) {
-        spdlog::info("Created a connection from {}", conn.address().to_string());
-        spdlog::info("Created a connection to {}", conn.peer_address().to_string());
-
-        std::string username_uppercase = std::string(username);
-        to_uppercase(username_uppercase);
-
-        std::string password_uppercase = std::string(password);
-        to_uppercase(password_uppercase);
-
-        loki::ByteBuffer byte_buffer{};
-
-        PaketAuthChallengeRequest auth_request;
-        auth_request.command.set(0);
-        auth_request.protocol_version.set(8);
-        auth_request.packet_size.set(static_cast<loki::i16>(30 + username_uppercase.length()));
-        auth_request.game_name.set(config::game);
-        auth_request.major_version.set(config::major_version);
-        auth_request.minor_version.set(config::minor_version);
-        auth_request.patch_version.set(config::patch_version);
-        auth_request.build.set(config::build);
-        auth_request.platform.set(config::platform);
-        auth_request.os.set(config::os);
-        auth_request.country.set(config::locale);
-        auth_request.timezone.set(config::timezone);
-        auth_request.ip_address.set(0);
-        auth_request.login.set(username_uppercase);
-
-        spdlog::info("---- Auth Request ----");
-        auth_request.for_each_field([](const loki::PacketField& field) {
-          spdlog::info("{}: {}", field.get_name(), field.to_string());
-        });
-
-        auth_request.save_buffer(byte_buffer);
-        byte_buffer.send(conn);
-
-        PaketAuthChallengeResponse auth_response;
-        byte_buffer.receive(conn);
-        auth_response.load_buffer(byte_buffer);
-
-        spdlog::info("---- Auth Response ----");
-        auth_response.for_each_field([](const loki::PacketField& field) {
-          spdlog::info("{}: {}", field.get_name(), field.to_string());
-        });
-
-        loki::BigNum N = loki::BigNum::from_binary(*auth_response.N);
-        loki::BigNum g = loki::BigNum::from_binary(*auth_response.g);
-        loki::SRP6 srp_client(N, g);
-
-        auto [session_key, client_M, crc_hash] = srp_client.generate(*auth_response.s, *auth_response.B, username_uppercase, password_uppercase);
-
-        PaketLogonProofRequest logon_proof_request;
-        logon_proof_request.command.set(1);
-        logon_proof_request.A.set(srp_client.get_A());
-        logon_proof_request.client_M.set(client_M);
-        logon_proof_request.crc_hash.set(crc_hash);
-        logon_proof_request.number_of_keys.set(0);
-        logon_proof_request.two_factor_enabled.set(0);
-
-        spdlog::info("---- Logon Proof Request ----");
-        logon_proof_request.for_each_field([](const loki::PacketField& field) {
-          spdlog::info("{}: {}", field.get_name(), field.to_string());
-        });
-
-        byte_buffer.reset();
-        logon_proof_request.save_buffer(byte_buffer);
-        byte_buffer.send(conn);
-
-        byte_buffer.reset();
-        byte_buffer.receive(conn);
-        PaketLogonProofResponse logon_proof_response;
-        logon_proof_response.load_buffer(byte_buffer);
-
-        spdlog::info("---- Logon Proof Response ----");
-        logon_proof_response.for_each_field([](const loki::PacketField& field) {
-          spdlog::info("{}: {}", field.get_name(), field.to_string());
-        });
-
-        auto server_M = loki::SHA1::get_digest_of(srp_client.get_A(), client_M, session_key);
-        DEBUG_ASSERT(*logon_proof_response.server_M == server_M);
-
+        auto sock = conn.clone();
+        connection_threads.emplace_back(
+            [u = std::string(username), p = std::string(password)](sockpp::tcp_socket&& sock) {
+              handle_connection(std::move(sock), u, p);
+            },
+            std::move(sock));
       } else {
         spdlog::error("Error connecting to server at {}", sockpp::inet_address(host, port).to_string());
         spdlog::error("{}", conn.last_error_str());
