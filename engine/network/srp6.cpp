@@ -62,7 +62,7 @@ loki::SRP6::generate(const Salt& salt, const EphemeralKey& B, std::string_view I
   auto S = (BigNum::from_binary(B) - kgx).mod_exp(aux, N);
 
   auto S_bin = S.to_byte_array<EPHEMERAL_KEY_LENGTH>();
-  auto K = SHA1_interleave(S_bin);
+  K = SHA1_interleave(S_bin);
 
   auto I_hash = SHA1::get_digest_of(I);
   auto N_hash = SHA1::get_digest_of(N.to_byte_vector());
@@ -71,8 +71,8 @@ loki::SRP6::generate(const Salt& salt, const EphemeralKey& B, std::string_view I
   SHA1::Digest Ng_hash;
   std::transform(N_hash.begin(), N_hash.end(), g_hash.begin(), Ng_hash.begin(), std::bit_xor<>());
 
-  SHA1::Digest client_M = SHA1::get_digest_of(Ng_hash, I_hash, salt, A, B, K);
-  SHA1::Digest crc_hash = SHA1::get_digest_of(A, client_M, K);
+  client_M = SHA1::get_digest_of(Ng_hash, I_hash, salt, A, B, K);
+  crc_hash = SHA1::get_digest_of(A, client_M, K);
 
   return { K, client_M, crc_hash };
 }

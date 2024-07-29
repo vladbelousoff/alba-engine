@@ -41,6 +41,16 @@ namespace loki {
       return A;
     }
 
+    const SHA1::Digest& get_client_M() const
+    {
+      return client_M;
+    }
+
+    const SHA1::Digest& get_crc_hash() const
+    {
+      return crc_hash;
+    }
+
   private:
     static SessionKey SHA1_interleave(const EphemeralKey& S);
 
@@ -50,6 +60,9 @@ namespace loki {
     BigNum a;
     BigNum k;
     EphemeralKey A;
+    SHA1::Digest client_M;
+    SHA1::Digest crc_hash;
+    SessionKey K;
   };
 
 } // namespace loki

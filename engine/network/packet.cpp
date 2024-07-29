@@ -3,6 +3,7 @@
 void
 loki::Packet::save_buffer(loki::ByteBuffer& buffer) const
 {
+  buffer.reset();
   for (auto* field : fields) {
     field->save(buffer);
   }

@@ -3,6 +3,7 @@
 #include <thread>
 
 #include "engine/engine_app.h"
+#include "engine/network/auth_connection.h"
 #include "engine/render/shader.h"
 #include "glm/detail/type_mat4x4.hpp"
 #include "glm/vec3.hpp"
@@ -10,7 +11,7 @@
 class GameApp : public loki::EngineApp
 {
 public:
-  virtual ~GameApp();
+  ~GameApp() override;
 
 protected:
   void post_init() override;
@@ -27,6 +28,6 @@ private:
   glm::mat4 model{ 1.f };
   glm::mat4 view{};
   glm::mat4 projection{};
-  std::vector<std::thread> connection_threads;
+  std::unique_ptr<loki::AuthConnection> auth_conn;
 };
 
