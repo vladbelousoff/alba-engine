@@ -9,9 +9,11 @@
 
 class GameApp : public loki::EngineApp
 {
+public:
+  virtual ~GameApp();
+
 protected:
   void post_init() override;
-  void pre_term() override;
   void update() override;
   void draw_ui() override;
   void draw() override;

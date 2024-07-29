@@ -171,14 +171,6 @@ GameApp::post_init()
 }
 
 void
-GameApp::pre_term()
-{
-  for (auto&& thread : connection_threads) {
-    thread.join();
-  }
-}
-
-void
 GameApp::update()
 {
   float x = camera.distance_to_origin * glm::sin(camera.phi) * glm::cos(camera.theta);
@@ -433,4 +425,11 @@ GameApp::draw()
     glBindVertexArray(0);
   });
 #endif
+}
+
+GameApp::~GameApp()
+{
+  for (auto&& thread : connection_threads) {
+    thread.join();
+  }
 }
