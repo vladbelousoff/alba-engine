@@ -27,6 +27,9 @@ namespace loki {
       add_field_in_pkt();
     }
 
+    PacketField(const PacketField&) = delete;
+    PacketField& operator=(const PacketField&) = delete;
+
   public:
     virtual std::string to_string() const = 0;
 
@@ -268,7 +271,7 @@ namespace loki {
 
   public:
     Packet() = default;
-    
+
     Packet(const Packet& other) = delete;
     Packet& operator=(const Packet& other) = delete;
 
