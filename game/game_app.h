@@ -3,7 +3,7 @@
 #include <thread>
 
 #include "engine/engine_app.h"
-#include "engine/network/auth_connection.h"
+#include "engine/network/auth_session.h"
 #include "engine/render/shader.h"
 #include "glm/detail/type_mat4x4.hpp"
 #include "glm/vec3.hpp"
@@ -21,13 +21,9 @@ protected:
 
 private:
   glm::vec3 background{ 0.144f, 0.186f, 0.311f };
-  std::uint32_t vao{};
-  std::uint32_t vbo{};
-  std::uint32_t texture{};
-  loki::ProgramHandle program{};
   glm::mat4 model{ 1.f };
   glm::mat4 view{};
   glm::mat4 projection{};
-  std::unique_ptr<loki::AuthConnection> auth_conn;
+  std::unique_ptr<loki::AuthSession> auth_session;
 };
 

@@ -40,7 +40,7 @@ sources = [
     'engine/network/byte_buffer.cpp',
     'engine/network/packet.cpp',
     'engine/network/srp6.cpp',
-    'engine/network/auth_connection.cpp',
+    'engine/network/auth_session.cpp',
     'engine/render/shader.cpp',
     'engine/datasource/mpq/mpq_archive.cpp',
     'engine/datasource/mpq/mpq_chain.cpp',

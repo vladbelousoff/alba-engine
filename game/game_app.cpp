@@ -1,4 +1,4 @@
-#include "engine/network/auth_connection.h"
+#include "engine/network/auth_session.h"
 
 #include "game_app.h"
 
@@ -16,7 +16,7 @@ struct
 
 GameApp::~GameApp()
 {
-  auth_conn.reset();
+  auth_session.reset();
 }
 
 void
@@ -59,12 +59,12 @@ GameApp::draw_ui()
     if (ImGui::Button("Connect")) {
       spdlog::info("Connecting to auth-server @{}:{}...", host, port);
 
-      auth_conn = std::make_unique<loki::AuthConnection>(host, (loki::u16)port);
-      auth_conn->login(username, password);
+      auth_session = std::make_unique<loki::AuthSession>(host, (loki::u16)port);
+      auth_session->login(username, password);
     }
 
-    if (auth_conn) {
-      auto realms = auth_conn->get_realms();
+    if (auth_session) {
+      auto realms = auth_session->get_realms();
       if (ImGui::BeginTable("Realms", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
         // Table headers
         ImGui::TableSetupColumn("Name");

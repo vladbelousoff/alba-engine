@@ -12,7 +12,7 @@
 
 namespace loki {
 
-  enum class AuthConnectionState : i8
+  enum class AuthSessionState : i8
   {
     INVALID = -1,
     CHALLENGE = 0,
@@ -20,7 +20,7 @@ namespace loki {
     REALM_LIST = 2,
   };
 
-  class AuthConnection
+  class AuthSession
   {
   public:
     struct Realm
@@ -30,8 +30,8 @@ namespace loki {
     };
 
   public:
-    explicit AuthConnection(std::string_view host, u16 port);
-    ~AuthConnection();
+    explicit AuthSession(std::string_view host, u16 port);
+    ~AuthSession();
 
   public:
     void login(std::string_view username, std::string_view password);
@@ -50,7 +50,7 @@ namespace loki {
     sockpp::tcp_socket socket;
     std::thread thread;
     std::atomic_bool running;
-    std::atomic<AuthConnectionState> state;
+    std::atomic<AuthSessionState> state;
     std::optional<loki::SRP6> srp6;
     ByteBuffer buffer;
     mutable std::shared_mutex realms_mutex;

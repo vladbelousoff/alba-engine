@@ -1,4 +1,4 @@
-#include "auth_connection.h"
+#include "auth_session.h"
 
 namespace config {
 
@@ -91,11 +91,11 @@ struct PacketAuthRealmListBody : loki::Packet
   LOKI_DECLARE_PACKET_FIELD(realm_id, loki::u8);
 };
 
-loki::AuthConnection::AuthConnection(std::string_view host, loki::u16 port)
+loki::AuthSession::AuthSession(std::string_view host, loki::u16 port)
   : connector({ std::string(host), port })
   , thread()
   , running(true)
-  , state(AuthConnectionState::INVALID)
+  , state(AuthSessionState::INVALID)
 {
   if (connector) {
     thread = std::thread(
@@ -106,14 +106,14 @@ loki::AuthConnection::AuthConnection(std::string_view host, loki::u16 port)
   }
 }
 
-loki::AuthConnection::~AuthConnection()
+loki::AuthSession::~AuthSession()
 {
   running = false;
   thread.join();
 }
 
 void
-loki::AuthConnection::handle_connection(sockpp::tcp_socket sock)
+loki::AuthSession::handle_connection(sockpp::tcp_socket sock)
 {
   using namespace std::chrono_literals;
 
@@ -121,20 +121,20 @@ loki::AuthConnection::handle_connection(sockpp::tcp_socket sock)
 
   while (running) {
     switch (state) {
-      case AuthConnectionState::CHALLENGE:
+      case AuthSessionState::CHALLENGE:
         handle_challenge();
         break;
-      case AuthConnectionState::LOGON_PROOF:
+      case AuthSessionState::LOGON_PROOF:
         handle_logon_proof();
         break;
-      case AuthConnectionState::REALM_LIST:
+      case AuthSessionState::REALM_LIST:
         handle_realm_list();
         break;
       default:
         break;
     }
 
-    if (state == AuthConnectionState::REALM_LIST) {
+    if (state == AuthSessionState::REALM_LIST) {
       std::this_thread::sleep_for(1s);
     }
   }
@@ -143,7 +143,7 @@ loki::AuthConnection::handle_connection(sockpp::tcp_socket sock)
 }
 
 void
-loki::AuthConnection::login(std::string_view username, std::string_view password)
+loki::AuthSession::login(std::string_view username, std::string_view password)
 {
   auto to_uppercase = [](std::string& string) {
     std::transform(string.begin(), string.end(), string.begin(), ::toupper);
@@ -155,11 +155,11 @@ loki::AuthConnection::login(std::string_view username, std::string_view password
   password_uppercase = password;
   to_uppercase(password_uppercase);
 
-  state = AuthConnectionState::CHALLENGE;
+  state = AuthSessionState::CHALLENGE;
 }
 
 void
-loki::AuthConnection::handle_challenge()
+loki::AuthSession::handle_challenge()
 {
   {
     PaketAuthChallengeRequest pkt;
@@ -203,11 +203,11 @@ loki::AuthConnection::handle_challenge()
     srp6->generate(*pkt.s, *pkt.B, username_uppercase, password_uppercase);
   }
 
-  state = AuthConnectionState::LOGON_PROOF;
+  state = AuthSessionState::LOGON_PROOF;
 }
 
 void
-loki::AuthConnection::handle_logon_proof()
+loki::AuthSession::handle_logon_proof()
 {
   {
     PaketAuthLogonProofRequest pkt;
@@ -238,11 +238,11 @@ loki::AuthConnection::handle_logon_proof()
     });
   }
 
-  state = AuthConnectionState::REALM_LIST;
+  state = AuthSessionState::REALM_LIST;
 }
 
 void
-loki::AuthConnection::handle_realm_list()
+loki::AuthSession::handle_realm_list()
 {
   spdlog::info("Checking ream list...");
 
@@ -280,7 +280,7 @@ loki::AuthConnection::handle_realm_list()
 }
 
 auto
-loki::AuthConnection::get_realms() const -> std::vector<Realm>
+loki::AuthSession::get_realms() const -> std::vector<Realm>
 {
   std::shared_lock lock(realms_mutex);
   return realms;
