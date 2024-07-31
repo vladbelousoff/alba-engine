@@ -36,7 +36,7 @@ loki::ByteBuffer::recv(sockpp::tcp_socket& conn)
   }
 
   if (n <= 0) {
-    spdlog::error("Error: !", n);
+    spdlog::error("Error: {}!", n);
   }
 }
 
