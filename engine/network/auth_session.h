@@ -5,8 +5,8 @@
 #include <shared_mutex>
 #include <thread>
 
+#include "engine/utils/byte_buffer.h"
 #include "engine/utils/types.h"
-#include "packet.h"
 #include "sockpp/tcp_connector.h"
 #include "srp6.h"
 

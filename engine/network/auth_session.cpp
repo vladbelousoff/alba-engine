@@ -14,11 +14,6 @@ namespace config {
 
 } // namespace config
 
-struct PacketAuth : public loki::Packet
-{
-  LOKI_DECLARE_PACKET_FIELD(command, loki::i8);
-};
-
 struct PaketAuthChallengeRequest
 {
   loki::u8 command{};
