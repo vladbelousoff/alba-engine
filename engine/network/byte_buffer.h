@@ -166,6 +166,22 @@ namespace loki {
   };
 
   template<>
+  struct LoadFieldHelper<std::string>
+  {
+    static void load(ByteBuffer& buffer, std::string& value)
+    {
+      std::ostringstream oss;
+      char ch;
+      do {
+        ch = buffer.read<char>();
+        oss << ch;
+      } while (ch != 0);
+
+      value = oss.str();
+    }
+  };
+
+  template<>
   struct SaveFieldHelper<std::string>
   {
     static void save(ByteBuffer& buffer, std::vector<u8>& value)
