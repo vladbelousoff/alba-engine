@@ -242,11 +242,7 @@ loki::AuthSession::handle_realm_list()
     realms.clear();
 
     for (int i = 0; i < pkt_head.number_of_realms; ++i) {
-      PacketAuthRealmListBody pkt_body;
-      buffer.load_buffer(pkt_body);
-      {
-        realms.emplace_back() = pkt_body;
-      }
+      buffer.load_buffer(realms.emplace_back());
     }
   };
 
@@ -254,7 +250,7 @@ loki::AuthSession::handle_realm_list()
 }
 
 auto
-loki::AuthSession::get_realms() const -> std::vector<PacketAuthRealmListBody>
+loki::AuthSession::get_realms() const -> std::vector<PacketAuthRealm>
 {
   std::shared_lock lock(realms_mutex);
   return realms;

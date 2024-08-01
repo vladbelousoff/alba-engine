@@ -12,7 +12,7 @@
 
 namespace loki {
 
-  struct PacketAuthRealmListBody
+  struct PacketAuthRealm
   {
     loki::u8 type{};
     loki::u8 locked{};
@@ -41,7 +41,7 @@ namespace loki {
 
   public:
     void login(std::string_view username, std::string_view password);
-    auto get_realms() const -> std::vector<PacketAuthRealmListBody>;
+    auto get_realms() const -> std::vector<PacketAuthRealm>;
 
   private:
     void handle_connection(sockpp::tcp_socket sock);
@@ -60,7 +60,7 @@ namespace loki {
     std::optional<loki::SRP6> srp6;
     ByteBuffer buffer;
     mutable std::shared_mutex realms_mutex;
-    std::vector<PacketAuthRealmListBody> realms;
+    std::vector<PacketAuthRealm> realms;
   };
 
 } // namespace loki
