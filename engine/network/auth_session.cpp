@@ -70,9 +70,10 @@ struct PaketAuthLogonProofResponse
   loki::u16 unknown_flags{};
 };
 
-struct PacketAuthRealmListRequest : PacketAuth
+struct PacketAuthRealmListRequest
 {
-  LOKI_DECLARE_PACKET_FIELD(unknown, loki::u32);
+  loki::u8 command{};
+  loki::u32 unknown{};
 };
 
 struct PacketAuthRealmListHead : PacketAuth
@@ -242,15 +243,11 @@ loki::AuthSession::handle_realm_list()
   spdlog::info("Checking ream list...");
 
   PacketAuthRealmListRequest pkt;
-  pkt.command.set(0x10); // Command: Realm List (0x10)
-  pkt.unknown.set(0);
+  pkt.command = 0x10; // Command: Realm List (0x10)
+  pkt.unknown = 0;
 
-  spdlog::info("[Realm List]");
-  pkt.for_each_field([](const loki::PacketField& field) {
-    spdlog::info("{}: {}", field.get_name(), field.to_string());
-  });
-
-  pkt.save_buffer(buffer);
+  buffer.reset();
+  buffer.save_buffer(pkt);
   buffer.send(socket);
 
   PacketAuthRealmListHead pkt_head;
