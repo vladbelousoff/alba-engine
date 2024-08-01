@@ -90,7 +90,10 @@ GameApp::draw_ui()
           });
           ImGui::TableSetColumnIndex(num_of_fields);
           if (ImGui::Button("Go")) {
-            spdlog::info("Connecting to: {}", realm.server_socket);
+            size_t colon_pos = realm.server_socket.find(':');
+            auto world_host = realm.server_socket.substr(0, colon_pos);
+            auto world_port = std::stoul(realm.server_socket.substr(colon_pos + 1));
+            world_session = std::make_unique<loki::WorldSession>(world_host, world_port);
           }
         }
 
