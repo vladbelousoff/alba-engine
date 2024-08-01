@@ -83,11 +83,13 @@ GameApp::draw_ui()
 
         for (const auto& realm : realms) {
           ImGui::TableNextRow();
+
           pfr::for_each_field(realm, [](auto& field, auto field_index) {
             ImGui::TableSetColumnIndex(field_index);
             std::string string = std::format("{}", field);
             ImGui::Text("%s", string.c_str());
           });
+
           ImGui::TableSetColumnIndex(num_of_fields);
           if (ImGui::Button("Go")) {
             size_t colon_pos = realm.server_socket.find(':');
