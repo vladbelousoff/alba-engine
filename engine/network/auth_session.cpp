@@ -19,51 +19,55 @@ struct PacketAuth : public loki::Packet
   LOKI_DECLARE_PACKET_FIELD(command, loki::i8);
 };
 
-struct PaketAuthChallengeRequest : PacketAuth
+struct PaketAuthChallengeRequest
 {
-  LOKI_DECLARE_PACKET_FIELD(protocol_version, loki::i8);
-  LOKI_DECLARE_PACKET_FIELD(packet_size, loki::i16);
-  LOKI_DECLARE_PACKET_ARRAY(game_name, loki::u8, 4);
-  LOKI_DECLARE_PACKET_FIELD(major_version, loki::i8);
-  LOKI_DECLARE_PACKET_FIELD(minor_version, loki::i8);
-  LOKI_DECLARE_PACKET_FIELD(patch_version, loki::i8);
-  LOKI_DECLARE_PACKET_FIELD(build, loki::i16);
-  LOKI_DECLARE_PACKET_ARRAY(platform, loki::u8, 4);
-  LOKI_DECLARE_PACKET_ARRAY(os, loki::u8, 4);
-  LOKI_DECLARE_PACKET_ARRAY(country, loki::u8, 4);
-  LOKI_DECLARE_PACKET_FIELD(timezone, loki::u32);
-  LOKI_DECLARE_PACKET_FIELD(ip_address, loki::u32);
-  LOKI_DECLARE_PACKET_BLOCK(login);
+  loki::u8 command{};
+  loki::u8 protocol_version{};
+  loki::u16 packet_size{};
+  std::array<loki::u8, 4> game_name{};
+  loki::u8 major_version{};
+  loki::u8 minor_version{};
+  loki::u8 patch_version{};
+  loki::u16 build{};
+  std::array<loki::u8, 4> platform{};
+  std::array<loki::u8, 4> os{};
+  std::array<loki::u8, 4> country{};
+  loki::u32 timezone{};
+  loki::u32 ip_address{};
+  std::vector<loki::u8> login{};
 };
 
-struct PaketAuthChallengeResponse : PacketAuth
+struct PaketAuthChallengeResponse
 {
-  LOKI_DECLARE_PACKET_FIELD(protocol_version, loki::i8);
-  LOKI_DECLARE_PACKET_FIELD(status, loki::i8);
-  LOKI_DECLARE_PACKET_ARRAY(B, loki::u8, 32);
-  LOKI_DECLARE_PACKET_BLOCK(g);
-  LOKI_DECLARE_PACKET_BLOCK(N);
-  LOKI_DECLARE_PACKET_ARRAY(s, loki::u8, 32);
-  LOKI_DECLARE_PACKET_ARRAY(crc_salt, loki::u8, 16);
-  LOKI_DECLARE_PACKET_FIELD(two_factor_enabled, loki::i8);
+  loki::u8 command{};
+  loki::u8 protocol_version{};
+  loki::u8 status{};
+  loki::SRP6::EphemeralKey B{};
+  std::vector<loki::u8> g{};
+  std::vector<loki::u8> N{};
+  loki::SRP6::EphemeralKey s{};
+  std::array<loki::u8, 16> crc_salt{};
+  loki::u8 two_factor_enabled{};
 };
 
-struct PaketAuthLogonProofRequest : PacketAuth
+struct PaketAuthLogonProofRequest
 {
-  LOKI_DECLARE_PACKET_ARRAY(A, loki::u8, 32);
-  LOKI_DECLARE_PACKET_ARRAY(client_M, loki::u8, 20);
-  LOKI_DECLARE_PACKET_ARRAY(crc_hash, loki::u8, 20);
-  LOKI_DECLARE_PACKET_FIELD(number_of_keys, loki::i8);
-  LOKI_DECLARE_PACKET_FIELD(two_factor_enabled, loki::i8);
+  loki::u8 command{};
+  loki::SRP6::EphemeralKey A{};
+  loki::SHA1::Digest client_M{};
+  loki::SHA1::Digest crc_hash{};
+  loki::u8 number_of_keys{};
+  loki::u8 two_factor_enabled{};
 };
 
-struct PaketAuthLogonProofResponse : PacketAuth
+struct PaketAuthLogonProofResponse
 {
-  LOKI_DECLARE_PACKET_FIELD(status, loki::i8);
-  LOKI_DECLARE_PACKET_ARRAY(server_M, loki::u8, 20);
-  LOKI_DECLARE_PACKET_FIELD(acount_flags, loki::u32);
-  LOKI_DECLARE_PACKET_FIELD(hardware_survey_id, loki::u32);
-  LOKI_DECLARE_PACKET_FIELD(unknown_flags, loki::u16);
+  loki::u8 command{};
+  loki::u8 status{};
+  loki::SHA1::Digest server_M{};
+  loki::u32 account_flags{};
+  loki::u32 hardware_survey_id{};
+  loki::u16 unknown_flags{};
 };
 
 struct PacketAuthRealmListRequest : PacketAuth
@@ -161,46 +165,45 @@ loki::AuthSession::login(std::string_view username, std::string_view password)
 void
 loki::AuthSession::handle_challenge()
 {
+  auto set_string = []<std::size_t N>(std::array<loki::u8, N>& data, const std::string& string) {
+    DEBUG_ASSERT(string.size() <= N);
+    std::reverse_copy(string.begin(), string.end(), data.begin());
+  };
+
   {
     PaketAuthChallengeRequest pkt;
-    pkt.command.set(0);
-    pkt.protocol_version.set(8);
-    pkt.packet_size.set(static_cast<loki::i16>(30 + username_uppercase.length()));
-    pkt.game_name.set(config::game);
-    pkt.major_version.set(config::major_version);
-    pkt.minor_version.set(config::minor_version);
-    pkt.patch_version.set(config::patch_version);
-    pkt.build.set(config::build);
-    pkt.platform.set(config::platform);
-    pkt.os.set(config::os);
-    pkt.country.set(config::locale);
-    pkt.timezone.set(config::timezone);
-    pkt.ip_address.set(0);
-    pkt.login.set(username_uppercase);
+    pkt.command = 0;
+    pkt.protocol_version = 8;
+    pkt.packet_size = 30 + username_uppercase.length();
+    set_string(pkt.game_name, config::game);
+    pkt.major_version = config::major_version;
+    pkt.minor_version = config::minor_version;
+    pkt.patch_version = config::patch_version;
+    pkt.build = config::build;
+    set_string(pkt.platform, config::platform);
+    set_string(pkt.os, config::os);
+    set_string(pkt.country, config::locale);
+    pkt.timezone = config::timezone;
+    pkt.ip_address = 0;
 
-    spdlog::info("[Auth Challenge Request]");
-    pkt.for_each_field([](const loki::PacketField& field) {
-      spdlog::info("{}: {}", field.get_name(), field.to_string());
-    });
+    pkt.login.resize(username_uppercase.size());
+    std::memcpy(pkt.login.data(), username_uppercase.data(), username_uppercase.size());
 
-    pkt.save_buffer(buffer);
+    buffer.save_buffer(pkt);
     buffer.send(socket);
+    buffer.reset();
   }
 
   {
     PaketAuthChallengeResponse pkt;
     buffer.recv(socket);
-    pkt.load_buffer(buffer);
+    buffer.load_buffer(pkt);
+    buffer.reset();
 
-    spdlog::info("[Auth Challenge Request]");
-    pkt.for_each_field([](const loki::PacketField& field) {
-      spdlog::info("{}: {}", field.get_name(), field.to_string());
-    });
-
-    loki::BigNum N = loki::BigNum::from_binary(*pkt.N);
-    loki::BigNum g = loki::BigNum::from_binary(*pkt.g);
+    loki::BigNum N = loki::BigNum::from_binary(pkt.N);
+    loki::BigNum g = loki::BigNum::from_binary(pkt.g);
     srp6 = loki::SRP6(N, g);
-    srp6->generate(*pkt.s, *pkt.B, username_uppercase, password_uppercase);
+    srp6->generate(pkt.s, pkt.B, username_uppercase, password_uppercase);
   }
 
   state = AuthSessionState::LOGON_PROOF;
@@ -211,31 +214,23 @@ loki::AuthSession::handle_logon_proof()
 {
   {
     PaketAuthLogonProofRequest pkt;
-    pkt.command.set(1);
-    pkt.A.set(srp6->get_A());
-    pkt.client_M.set(srp6->get_client_M());
-    pkt.crc_hash.set(srp6->get_crc_hash());
-    pkt.number_of_keys.set(0);
-    pkt.two_factor_enabled.set(0);
+    pkt.command = 0x1;
+    pkt.A = srp6->get_A();
+    pkt.client_M = srp6->get_client_M();
+    pkt.crc_hash = srp6->get_crc_hash();
+    pkt.number_of_keys = 0;
+    pkt.two_factor_enabled = 0;
 
-    spdlog::info("[Auth Logon Proof Request]");
-    pkt.for_each_field([](const loki::PacketField& field) {
-      spdlog::info("{}: {}", field.get_name(), field.to_string());
-    });
-
-    pkt.save_buffer(buffer);
+    buffer.save_buffer(pkt);
     buffer.send(socket);
+    buffer.reset();
   }
 
   {
     PaketAuthLogonProofResponse pkt;
     buffer.recv(socket);
-    pkt.load_buffer(buffer);
-
-    spdlog::info("[Auth Logon Proof Response]");
-    pkt.for_each_field([](const loki::PacketField& field) {
-      spdlog::info("{}: {}", field.get_name(), field.to_string());
-    });
+    buffer.load_buffer(pkt);
+    buffer.reset();
   }
 
   state = AuthSessionState::REALM_LIST;

@@ -24,7 +24,7 @@ loki::ByteBuffer::send(sockpp::tcp_socket& conn) const
   conn.write(buffer.data(), buffer.size());
 }
 
-void
+ssize_t
 loki::ByteBuffer::recv(sockpp::tcp_socket& conn)
 {
   buffer.resize(DEFAULT_SIZE);
@@ -38,6 +38,8 @@ loki::ByteBuffer::recv(sockpp::tcp_socket& conn)
   if (n <= 0) {
     spdlog::error("Error: {}!", n);
   }
+
+  return n;
 }
 
 void

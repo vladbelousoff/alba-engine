@@ -22,8 +22,6 @@ namespace loki {
   public:
     static constexpr size_t SALT_LENGTH = 32;
     using Salt = std::array<u8, SALT_LENGTH>;
-    static constexpr size_t VERIFIER_LENGTH = 32;
-    using Verifier = std::array<u8, VERIFIER_LENGTH>;
     static constexpr size_t EPHEMERAL_KEY_LENGTH = 32;
     using EphemeralKey = std::array<u8, EPHEMERAL_KEY_LENGTH>;
     static constexpr size_t SESSION_KEY_LENGTH = 40;
@@ -60,9 +58,9 @@ namespace loki {
     BigNum a;
     BigNum k;
     EphemeralKey A;
-    SHA1::Digest client_M;
-    SHA1::Digest crc_hash;
-    SessionKey K;
+    SHA1::Digest client_M{};
+    SHA1::Digest crc_hash{};
+    SessionKey K{};
   };
 
 } // namespace loki

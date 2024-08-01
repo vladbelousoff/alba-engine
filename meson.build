@@ -22,6 +22,7 @@ dependencies = [
     dependency('libcrypto'),
     dependency('libssl'),
     dependency('openssl'),
+    dependency('pfr'),
 ]
 
 c_compiler = meson.get_compiler('c')
