@@ -237,19 +237,20 @@ loki::AuthSession::handle_realm_list()
   buffer.recv(socket);
   buffer.load_buffer(pkt_head);
 
-  {
+  auto update_realms = [this, &pkt_head]() {
     std::unique_lock lock(realms_mutex);
     realms.clear();
-  }
 
-  for (int i = 0; i < pkt_head.number_of_realms; ++i) {
-    PacketAuthRealmListBody pkt_body;
-    buffer.load_buffer(pkt_body);
-    {
-      std::unique_lock lock(realms_mutex);
-      realms.emplace_back() = pkt_body;
+    for (int i = 0; i < pkt_head.number_of_realms; ++i) {
+      PacketAuthRealmListBody pkt_body;
+      buffer.load_buffer(pkt_body);
+      {
+        realms.emplace_back() = pkt_body;
+      }
     }
-  }
+  };
+
+  update_realms();
 }
 
 auto
