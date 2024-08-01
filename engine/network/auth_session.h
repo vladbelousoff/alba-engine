@@ -19,7 +19,7 @@ namespace loki {
     loki::u8 flags{};
     std::string name;
     std::string server_socket;
-    loki::u8 population_level{};
+    loki::u32 population_level{};
     loki::u8 number_of_characters{};
     loki::u8 category{};
     loki::u8 realm_id{};

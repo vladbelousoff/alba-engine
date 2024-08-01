@@ -68,7 +68,7 @@ GameApp::draw_ui()
     if (auth_session) {
       auto realms = auth_session->get_realms();
       int num_of_fields = pfr::detail::fields_count<loki::PacketAuthRealm>();
-      if (ImGui::BeginTable("Realms", num_of_fields, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
+      if (ImGui::BeginTable("Realms", num_of_fields + 1, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
         // Table headers
         ImGui::TableSetupColumn("Type");
         ImGui::TableSetupColumn("Locked");
@@ -88,16 +88,10 @@ GameApp::draw_ui()
             std::string string = std::format("{}", field);
             ImGui::Text("%s", string.c_str());
           });
-#if 0
-ImGui::TableSetColumnIndex(0);
-ImGui::Text("%s", realm.name.c_str());
-ImGui::TableSetColumnIndex(1);
-ImGui::Text("%s", realm.server_socket.c_str());
-ImGui::TableSetColumnIndex(2);
-          if (ImGui::Button("Connect")) {
-            spdlog::info("Connecting to {}", realm.server_socket);
+          ImGui::TableSetColumnIndex(num_of_fields);
+          if (ImGui::Button("Go")) {
+            spdlog::info("Connecting to: {}", realm.server_socket);
           }
-#endif
         }
 
         ImGui::EndTable();
