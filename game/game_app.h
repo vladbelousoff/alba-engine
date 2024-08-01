@@ -4,6 +4,7 @@
 
 #include "engine/engine_app.h"
 #include "engine/network/auth_session.h"
+#include "engine/network/world_session.h"
 #include "engine/render/shader.h"
 #include "glm/detail/type_mat4x4.hpp"
 #include "glm/vec3.hpp"
@@ -25,5 +26,6 @@ private:
   glm::mat4 view{};
   glm::mat4 projection{};
   std::unique_ptr<loki::AuthSession> auth_session;
+  std::unique_ptr<loki::WorldSession> world_session;
 };
 

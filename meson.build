@@ -41,6 +41,7 @@ sources = [
     'engine/crypto/crypto_random.cpp',
     'engine/network/srp6.cpp',
     'engine/network/auth_session.cpp',
+    'engine/network/world_session.cpp',
     'engine/render/shader.cpp',
     'engine/datasource/mpq/mpq_archive.cpp',
     'engine/datasource/mpq/mpq_chain.cpp',

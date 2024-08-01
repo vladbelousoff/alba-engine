@@ -8,6 +8,8 @@
 #include "imgui.h"
 #include "spdlog/spdlog.h"
 
+#include <format>
+
 struct
 {
   float distance_to_origin{ 6.7f };
@@ -65,18 +67,37 @@ GameApp::draw_ui()
 
     if (auth_session) {
       auto realms = auth_session->get_realms();
-      if (ImGui::BeginTable("Realms", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
+      int num_of_fields = pfr::detail::fields_count<loki::PacketAuthRealm>();
+      if (ImGui::BeginTable("Realms", num_of_fields, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
         // Table headers
+        ImGui::TableSetupColumn("Type");
+        ImGui::TableSetupColumn("Locked");
+        ImGui::TableSetupColumn("Flags");
         ImGui::TableSetupColumn("Name");
         ImGui::TableSetupColumn("Server Socket");
+        ImGui::TableSetupColumn("Population");
+        ImGui::TableSetupColumn("Number of Characters");
+        ImGui::TableSetupColumn("Category");
+        ImGui::TableSetupColumn("Realm ID");
         ImGui::TableHeadersRow();
 
         for (const auto& realm : realms) {
           ImGui::TableNextRow();
-          ImGui::TableSetColumnIndex(0);
-          ImGui::Text("%s", realm.name.c_str());
-          ImGui::TableSetColumnIndex(1);
-          ImGui::Text("%s", realm.server_socket.c_str());
+          pfr::for_each_field(realm, [](auto& field, auto field_index) {
+            ImGui::TableSetColumnIndex(field_index);
+            std::string string = std::format("{}", field);
+            ImGui::Text("%s", string.c_str());
+          });
+#if 0
+ImGui::TableSetColumnIndex(0);
+ImGui::Text("%s", realm.name.c_str());
+ImGui::TableSetColumnIndex(1);
+ImGui::Text("%s", realm.server_socket.c_str());
+ImGui::TableSetColumnIndex(2);
+          if (ImGui::Button("Connect")) {
+            spdlog::info("Connecting to {}", realm.server_socket);
+          }
+#endif
         }
 
         ImGui::EndTable();
