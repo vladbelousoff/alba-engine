@@ -33,7 +33,7 @@ namespace loki {
     REALM_LIST = 2,
   };
 
-  class AuthSession
+  class AuthSession : std::enable_shared_from_this<AuthSession>
   {
   public:
     explicit AuthSession(std::string_view host, u16 port);
@@ -42,9 +42,11 @@ namespace loki {
   public:
     void login(std::string_view username, std::string_view password);
     auto get_realms() const -> std::vector<PacketAuthRealm>;
+    auto get_username() const -> const std::string&;
+    auto get_session_key() const -> std::optional<SRP6::SessionKey>;
 
   private:
-    void handle_connection(sockpp::tcp_socket sock);
+    void handle_connection();
     void handle_challenge();
     void handle_logon_proof();
     void handle_realm_list();

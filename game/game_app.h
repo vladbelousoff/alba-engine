@@ -25,7 +25,7 @@ private:
   glm::mat4 model{ 1.f };
   glm::mat4 view{};
   glm::mat4 projection{};
-  std::unique_ptr<loki::AuthSession> auth_session;
-  std::unique_ptr<loki::WorldSession> world_session;
+  std::shared_ptr<loki::AuthSession> auth_session;
+  std::shared_ptr<loki::WorldSession> world_session;
 };
 

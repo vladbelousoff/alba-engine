@@ -61,7 +61,7 @@ GameApp::draw_ui()
     if (ImGui::Button("Connect")) {
       spdlog::info("Connecting to auth-server @{}:{}...", host, port);
 
-      auth_session = std::make_unique<loki::AuthSession>(host, (loki::u16)port);
+      auth_session = std::make_shared<loki::AuthSession>(host, (loki::u16)port);
       auth_session->login(username, password);
     }
 
@@ -91,11 +91,11 @@ GameApp::draw_ui()
           });
 
           ImGui::TableSetColumnIndex(num_of_fields);
-          if (ImGui::Button("Go")) {
+          if (ImGui::Button("Connect")) {
             size_t colon_pos = realm.server_socket.find(':');
             auto world_host = realm.server_socket.substr(0, colon_pos);
             auto world_port = std::stoul(realm.server_socket.substr(colon_pos + 1));
-            world_session = std::make_unique<loki::WorldSession>(world_host, world_port);
+            world_session = std::make_shared<loki::WorldSession>(auth_session, world_host, static_cast<loki::u16>(world_port));
           }
         }
 

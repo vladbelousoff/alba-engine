@@ -184,9 +184,9 @@ namespace loki {
   template<>
   struct SaveFieldHelper<std::string>
   {
-    static void save(ByteBuffer& buffer, std::vector<u8>& value)
+    static void save(ByteBuffer& buffer, std::string& value)
     {
-      buffer.append(value);
+      buffer.append(std::string_view(value));
     }
   };
 

@@ -1,18 +1,6 @@
 #include "auth_session.h"
 
-namespace config {
-
-  constexpr const char game[] = "WoW";
-  constexpr int build = 12'340;
-  constexpr const char locale[] = "enUS";
-  constexpr const char os[] = "Win";
-  constexpr const char platform[] = "x86";
-  constexpr int major_version = 3;
-  constexpr int minor_version = 3;
-  constexpr int patch_version = 5;
-  constexpr int timezone = 0;
-
-} // namespace config
+#include "engine/config.h"
 
 struct PaketAuthChallengeRequest
 {
@@ -88,7 +76,8 @@ loki::AuthSession::AuthSession(std::string_view host, loki::u16 port)
   if (connector) {
     thread = std::thread(
         [this](sockpp::tcp_socket sock) {
-          handle_connection(std::move(sock));
+          socket = std::move(sock);
+          handle_connection();
         },
         connector.clone());
   }
@@ -101,11 +90,9 @@ loki::AuthSession::~AuthSession()
 }
 
 void
-loki::AuthSession::handle_connection(sockpp::tcp_socket sock)
+loki::AuthSession::handle_connection()
 {
   using namespace std::chrono_literals;
-
-  socket = std::move(sock);
 
   while (running) {
     switch (state) {
@@ -254,4 +241,20 @@ loki::AuthSession::get_realms() const -> std::vector<PacketAuthRealm>
 {
   std::shared_lock lock(realms_mutex);
   return realms;
+}
+
+auto
+loki::AuthSession::get_username() const -> const std::string&
+{
+  return username_uppercase;
+}
+
+auto
+loki::AuthSession::get_session_key() const -> std::optional<SRP6::SessionKey>
+{
+  if (srp6) {
+    return srp6->get_session_key();
+  }
+
+  return std::nullopt;
 }

@@ -32,7 +32,7 @@ namespace loki {
     ~SRP6() = default;
 
   public:
-    std::tuple<loki::SRP6::SessionKey, loki::SHA1::Digest, loki::SHA1::Digest> generate(const Salt& salt, const EphemeralKey& B, std::string_view I, std::string_view P);
+    void generate(const Salt& salt, const EphemeralKey& B, std::string_view I, std::string_view P);
 
     const EphemeralKey& get_A() const
     {
@@ -47,6 +47,11 @@ namespace loki {
     const SHA1::Digest& get_crc_hash() const
     {
       return crc_hash;
+    }
+
+    const SessionKey& get_session_key() const
+    {
+      return K;
     }
 
   private:

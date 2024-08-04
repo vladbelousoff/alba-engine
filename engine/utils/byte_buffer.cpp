@@ -16,6 +16,7 @@ void
 loki::ByteBuffer::append(std::string_view value)
 {
   buffer.insert(buffer.end(), value.begin(), value.end());
+  buffer.push_back(0);
 }
 
 void
@@ -35,7 +36,7 @@ loki::ByteBuffer::recv(sockpp::tcp_socket& conn)
     buffer.resize(n);
   }
 
-  if (n <= 0) {
+  if (n < 0) {
     spdlog::error("Error: {}!", n);
   }
 
