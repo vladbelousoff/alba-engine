@@ -41,6 +41,7 @@ namespace loki {
 
   public:
     void login(std::string_view username, std::string_view password);
+    void shutdown();
     auto get_realms() const -> std::vector<PacketAuthRealm>;
     auto get_username() const -> const std::string&;
     auto get_session_key() const -> std::optional<SRP6::SessionKey>;

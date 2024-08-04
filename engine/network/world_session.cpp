@@ -3,6 +3,7 @@
 #include "engine/config.h"
 #include "engine/crypto/crypto_hash.h"
 #include "engine/crypto/crypto_random.h"
+#include "opcodes.h"
 
 loki::WorldSession::WorldSession(const std::shared_ptr<AuthSession>& auth_session, std::string_view host, loki::u16 port)
   : auth_session(auth_session)
@@ -45,10 +46,7 @@ loki::WorldSession::handle_connection()
   std::array<loki::u8, 4> auth_seed{};
   buffer.read(auth_seed);
 
-  const loki::u16 msg_auth_challenge = 0x1EC;
-  const loki::u16 msg_auth_proof = 0x01ED;
-
-  if (command == msg_auth_challenge) {
+  if (command == SMSG_AUTH_CHALLENGE) {
     spdlog::info("Received MSG Auth Challenge");
     buffer.read<loki::u8>(); // 0x1
 
@@ -83,7 +81,7 @@ loki::WorldSession::handle_connection()
 
     ClientPacketHeader client_header{};
     client_header.size = htons(username.length() + auth_info.addon_info.size() + 62);
-    client_header.command = msg_auth_proof;
+    client_header.command = CMSG_AUTH_SESSION;
 
     buffer.save_buffer(client_header);
     buffer.save_buffer(auth_info);

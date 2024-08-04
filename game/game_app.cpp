@@ -95,6 +95,7 @@ GameApp::draw_ui()
             size_t colon_pos = realm.server_socket.find(':');
             auto world_host = realm.server_socket.substr(0, colon_pos);
             auto world_port = std::stoul(realm.server_socket.substr(colon_pos + 1));
+            auth_session->shutdown();
             world_session = std::make_shared<loki::WorldSession>(auth_session, world_host, static_cast<loki::u16>(world_port));
           }
         }

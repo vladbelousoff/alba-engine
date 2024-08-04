@@ -7,11 +7,10 @@
 #include "auth_session.h"
 #include "engine/utils/byte_buffer.h"
 #include "engine/utils/types.h"
+#include "opcodes.h"
 #include "sockpp/tcp_connector.h"
 
 namespace loki {
-
-  const u32 NUM_MSG_TYPES = 0x51F;
 
   struct ServerPacketHeader
   {

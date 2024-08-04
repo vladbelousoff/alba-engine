@@ -85,8 +85,14 @@ loki::AuthSession::AuthSession(std::string_view host, loki::u16 port)
 
 loki::AuthSession::~AuthSession()
 {
-  running = false;
+  shutdown();
   thread.join();
+}
+
+void
+loki::AuthSession::shutdown()
+{
+  running = false;
 }
 
 void
