@@ -11,14 +11,13 @@
 
 class GameApp : public loki::EngineApp
 {
-public:
-  ~GameApp() override;
-
 protected:
-  void post_init() override;
-  void update() override;
-  void draw_ui() override;
-  void draw() override;
+  bool on_init() override;
+  void on_term() override;
+
+  void on_update() override;
+  void on_render() override;
+  void on_gui() override;
 
 private:
   glm::vec3 background{ 0.144f, 0.186f, 0.311f };

@@ -16,21 +16,28 @@ struct
   float phi{ 5.182f }, theta{ 5.716f };
 } camera;
 
-GameApp::~GameApp()
+bool
+GameApp::on_init()
 {
-  auth_session.reset();
-}
+  if (!EngineApp::on_init()) {
+    return false;
+  }
 
-void
-GameApp::post_init()
-{
   sockpp::initialize();
-
-  // loki::MPQChain chain{ get_root_path() / "Data" };
+  return true;
 }
 
 void
-GameApp::update()
+GameApp::on_term()
+{
+  world_session.reset();
+  auth_session.reset();
+
+  EngineApp::on_term();
+}
+
+void
+GameApp::on_update()
 {
   float x = camera.distance_to_origin * glm::sin(camera.phi) * glm::cos(camera.theta);
   float y = camera.distance_to_origin * glm::cos(camera.phi);
@@ -46,7 +53,7 @@ GameApp::update()
 }
 
 void
-GameApp::draw_ui()
+GameApp::on_gui()
 {
   if (ImGui::Begin("Auth")) {
     static char host[32] = "localhost";
@@ -92,11 +99,7 @@ GameApp::draw_ui()
 
           ImGui::TableSetColumnIndex(num_of_fields);
           if (ImGui::Button("Connect")) {
-            size_t colon_pos = realm.server_socket.find(':');
-            auto world_host = realm.server_socket.substr(0, colon_pos);
-            auto world_port = std::stoul(realm.server_socket.substr(colon_pos + 1));
-            auth_session->shutdown();
-            world_session = std::make_shared<loki::WorldSession>(auth_session, world_host, static_cast<loki::u16>(world_port));
+            world_session = auth_session->connect_to_realm(realm.realm_id);
           }
         }
 
@@ -109,7 +112,7 @@ GameApp::draw_ui()
 }
 
 void
-GameApp::draw()
+GameApp::on_render()
 {
   glClearColor(background.r, background.g, background.b, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -8,7 +8,7 @@
 loki::EngineApp::~EngineApp()
 {
   if (window) {
-    term();
+    on_term();
   }
 }
 
@@ -17,12 +17,10 @@ loki::EngineApp::launch(const std::shared_ptr<EngineSettings>& _settings) -> int
 {
   settings = _settings;
 
-  if (!init()) {
+  if (!on_init()) {
     window = nullptr;
     return 1;
   }
-
-  post_init();
 
   // Unbind VAO, VBO, and EBO
   glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -33,10 +31,10 @@ loki::EngineApp::launch(const std::shared_ptr<EngineSettings>& _settings) -> int
     loki::ScopeTimer scope_timer{ delta_time };
 
     // Main update
-    update();
+    on_update();
 
     // Draw main scene
-    draw();
+    on_render();
 
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
@@ -44,7 +42,7 @@ loki::EngineApp::launch(const std::shared_ptr<EngineSettings>& _settings) -> int
     ImGui::NewFrame();
 
     // Draw UI
-    draw_ui();
+    on_gui();
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -57,7 +55,7 @@ loki::EngineApp::launch(const std::shared_ptr<EngineSettings>& _settings) -> int
 }
 
 bool
-loki::EngineApp::init()
+loki::EngineApp::on_init()
 {
   if (!glfwInit()) {
     spdlog::error("Failed to initialize GLFW!");
@@ -116,7 +114,7 @@ loki::EngineApp::init()
 }
 
 void
-loki::EngineApp::term()
+loki::EngineApp::on_term()
 {
   // Some ImGui cleanups here
   ImGui_ImplOpenGL3_Shutdown();

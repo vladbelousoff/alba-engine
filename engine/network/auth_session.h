@@ -12,6 +12,8 @@
 
 namespace loki {
 
+  class WorldSession;
+
   struct PacketAuthRealm
   {
     loki::u8 type{};
@@ -33,14 +35,18 @@ namespace loki {
     REALM_LIST = 2,
   };
 
-  class AuthSession : std::enable_shared_from_this<AuthSession>
+  class AuthSession : public std::enable_shared_from_this<AuthSession>
   {
   public:
     explicit AuthSession(std::string_view host, u16 port);
     ~AuthSession();
 
+    AuthSession(const AuthSession&) = delete;
+    AuthSession& operator=(const AuthSession&) = delete;
+
   public:
     void login(std::string_view username, std::string_view password);
+    auto connect_to_realm(u8 realm_id) -> std::shared_ptr<WorldSession>;
     void shutdown();
     auto get_realms() const -> std::vector<PacketAuthRealm>;
     auto get_username() const -> const std::string&;

@@ -1,6 +1,7 @@
 #include "auth_session.h"
 
 #include "engine/config.h"
+#include "world_session.h"
 
 struct PaketAuthChallengeRequest
 {
@@ -86,13 +87,13 @@ loki::AuthSession::AuthSession(std::string_view host, loki::u16 port)
 loki::AuthSession::~AuthSession()
 {
   shutdown();
-  thread.join();
 }
 
 void
 loki::AuthSession::shutdown()
 {
   running = false;
+  thread.join();
 }
 
 void
@@ -263,4 +264,20 @@ loki::AuthSession::get_session_key() const -> std::optional<SRP6::SessionKey>
   }
 
   return std::nullopt;
+}
+
+auto
+loki::AuthSession::connect_to_realm(loki::u8 realm_id) -> std::shared_ptr<WorldSession>
+{
+  for (const auto& realm : get_realms()) {
+    if (realm.realm_id == realm_id) {
+      auto colon_pos = realm.server_socket.find(':');
+      auto world_host = realm.server_socket.substr(0, colon_pos);
+      auto world_port = std::stoul(realm.server_socket.substr(colon_pos + 1));
+
+      return std::make_shared<WorldSession>(weak_from_this(), realm_id, world_host, static_cast<u16>(world_port));
+    }
+  }
+
+  return nullptr;
 }

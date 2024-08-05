@@ -27,14 +27,12 @@ namespace loki {
     auto launch(const std::shared_ptr<EngineSettings>& settings) -> int;
 
   protected:
-    virtual void post_init() = 0;
-    virtual void update() = 0;
-    virtual void draw() = 0;
-    virtual void draw_ui() = 0;
+    virtual bool on_init();
+    virtual void on_term();
 
-  private:
-    bool init();
-    void term();
+    virtual void on_update() = 0;
+    virtual void on_render() = 0;
+    virtual void on_gui() = 0;
 
   protected:
     auto get_delta_time() const -> float
