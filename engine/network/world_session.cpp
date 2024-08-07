@@ -10,6 +10,7 @@ loki::WorldSession::WorldSession(const std::weak_ptr<AuthSession>& auth_session,
   , realm_id(realm_id)
   , connector({ std::string(host), port })
   , thread()
+  , auth_crypt()
   , running(true)
 {
   if (connector) {
@@ -33,10 +34,12 @@ loki::WorldSession::handle_connection()
 {
   spdlog::info("Connected to {}", socket.peer_address().to_string());
 
+  const auto& session_key = auth_session.lock()->get_session_key();
+  auth_crypt.init(*session_key);
+
   while (running) {
     buffer.reset();
     read_next_packet();
-    send_next_packet();
   }
 
   socket.shutdown();
@@ -45,23 +48,25 @@ loki::WorldSession::handle_connection()
 void
 loki::WorldSession::read_next_packet()
 {
+  buffer.reset();
   ssize_t n = buffer.recv(socket);
   if (n <= 0) {
     return;
   }
 
-  buffer.read<loki::u16>(); // header
-  u16 command = buffer.read<loki::u16>();
-  process_command(command);
-}
-
-void
-loki::WorldSession::send_next_packet()
-{
-  if (!outgoing_messages.empty()) {
-    outgoing_messages.back().send(socket);
-    outgoing_messages.pop();
+  u16 command;
+  if (encrypted) {
+    // ServerPacketHeader header;
+    std::array<u8, 4> header{};
+    buffer.load_buffer(header);
+    auth_crypt.decrypt_recv(header.data(), 4 /* normal size packet, there's also 5-sized packets, but it's not our case so far */);
+    command = *reinterpret_cast<u16*>(&header[2]);
+  } else {
+    buffer.read<u16>(); // header, unused data
+    command = buffer.read<u16>();
   }
+
+  process_command(command);
 }
 
 void
@@ -116,11 +121,9 @@ loki::WorldSession::handle_auth_challenge()
   client_header.size = htons(username.length() + auth_info.addon_info.size() + 62);
   client_header.command = CMSG_AUTH_SESSION;
 
-  ByteBuffer outgoing_buffer;
-  outgoing_buffer.save_buffer(client_header);
-  outgoing_buffer.save_buffer(auth_info);
-
-  outgoing_messages.push(outgoing_buffer);
-
-  spdlog::info("CMSG_AUTH_SESSION sent");
+  buffer.reset();
+  buffer.save_buffer(client_header);
+  buffer.save_buffer(auth_info);
+  buffer.send(socket);
+  encrypted = true;
 }

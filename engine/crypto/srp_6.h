@@ -1,15 +1,11 @@
 #pragma once
 
-#include <openssl/bn.h>
-#include <openssl/evp.h>
-#include <openssl/sha.h>
-#include <openssl/srp.h>
-
 #include <array>
 #include <string_view>
 #include <vector>
 
 #include "engine/crypto/crypto_hash.h"
+#include "engine/network/auth_defines.h"
 #include "engine/utils/big_num.h"
 #include "engine/utils/types.h"
 
@@ -24,8 +20,6 @@ namespace loki {
     using Salt = std::array<u8, SALT_LENGTH>;
     static constexpr size_t EPHEMERAL_KEY_LENGTH = 32;
     using EphemeralKey = std::array<u8, EPHEMERAL_KEY_LENGTH>;
-    static constexpr size_t SESSION_KEY_LENGTH = 40;
-    using SessionKey = std::array<u8, SESSION_KEY_LENGTH>;
 
   public:
     explicit SRP6(const BigNum& N, const BigNum& g);

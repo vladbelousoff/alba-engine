@@ -257,7 +257,7 @@ loki::AuthSession::get_username() const -> const std::string&
 }
 
 auto
-loki::AuthSession::get_session_key() const -> std::optional<SRP6::SessionKey>
+loki::AuthSession::get_session_key() const -> std::optional<SessionKey>
 {
   if (srp6) {
     return srp6->get_session_key();

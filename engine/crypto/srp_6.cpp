@@ -1,8 +1,8 @@
-#include "srp6.h"
+#include "srp_6.h"
 
 #include "engine/crypto/crypto_random.h"
-
 #include "libassert/assert.hpp"
+
 #include <algorithm>
 
 loki::SRP6::SRP6(const loki::BigNum& N, const loki::BigNum& g)
@@ -16,7 +16,7 @@ loki::SRP6::SRP6(const loki::BigNum& N, const loki::BigNum& g)
   k.set_dword(3);
 }
 
-loki::SRP6::SessionKey
+loki::SessionKey
 loki::SRP6::SHA1_interleave(const loki::SRP6::EphemeralKey& S)
 {
   // split S into two buffers

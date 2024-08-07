@@ -4,6 +4,7 @@
 #include <string_view>
 #include <thread>
 
+#include "auth_crypt.h"
 #include "auth_session.h"
 #include "engine/utils/byte_buffer.h"
 #include "engine/utils/types.h"
@@ -12,30 +13,21 @@
 
 namespace loki {
 
-  struct ServerPacketHeader
-  {
-    u16 size;
-    u32 command;
-
-    auto is_valid_size() const -> bool
-    {
-      return size >= 4 && size <= 10'240;
-    }
-
-    auto is_valid_opcode() const -> bool
-    {
-      return command < NUM_MSG_TYPES;
-    }
-  };
-
-  struct ClientPacketHeader
-  {
-    u16 size{};
-    u32 command{};
-  };
-
   class WorldSession
   {
+  public:
+    struct ServerPacketHeader
+    {
+      u32 size{};
+      std::array<u8, 5> header{};
+    };
+
+    struct ClientPacketHeader
+    {
+      u16 size{};
+      u32 command{};
+    };
+
   public:
     explicit WorldSession(const std::weak_ptr<AuthSession>& auth_session, u8 realm_id, std::string_view host, u16 port);
     ~WorldSession();
@@ -43,7 +35,6 @@ namespace loki {
   private:
     void handle_connection();
     void read_next_packet();
-    void send_next_packet();
     void process_command(u16 command);
     void handle_auth_challenge();
 
@@ -53,9 +44,11 @@ namespace loki {
     sockpp::tcp_connector connector;
     sockpp::tcp_socket socket;
     std::thread thread;
+    AuthCrypt auth_crypt;
     std::atomic_bool running;
     ByteBuffer buffer;
     std::queue<ByteBuffer> outgoing_messages;
+    bool encrypted = false;
   };
 
 } // namespace loki

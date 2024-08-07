@@ -5,10 +5,10 @@
 #include <shared_mutex>
 #include <thread>
 
+#include "engine/crypto/srp_6.h"
 #include "engine/utils/byte_buffer.h"
 #include "engine/utils/types.h"
 #include "sockpp/tcp_connector.h"
-#include "srp6.h"
 
 namespace loki {
 
@@ -50,7 +50,7 @@ namespace loki {
     void shutdown();
     auto get_realms() const -> std::vector<PacketAuthRealm>;
     auto get_username() const -> const std::string&;
-    auto get_session_key() const -> std::optional<SRP6::SessionKey>;
+    auto get_session_key() const -> std::optional<SessionKey>;
 
   private:
     void handle_connection();

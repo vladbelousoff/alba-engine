@@ -1,99 +1,95 @@
 #pragma once
 
-#include <functional>
-#include <openssl/evp.h>
-
-#include "crypro_constants.h"
-#include "engine/utils/types.h"
-#include "libassert/assert.hpp"
+#include "crypto_hash.h"
 
 namespace loki {
 
-  struct GenericHashImpl
-  {
-    typedef EVP_MD const* (*HashCreator)();
-
-    static auto create_context() noexcept -> EVP_MD_CTX*
-    {
-      return EVP_MD_CTX_new();
-    }
-
-    static void destroy_context(EVP_MD_CTX* context)
-    {
-      EVP_MD_CTX_free(context);
-    }
-  };
-
   template<GenericHashImpl::HashCreator HashCreator, size_t DigestLength>
-  class GenericHash
+  class GenericHMAC
   {
   public:
     static constexpr size_t DIGEST_LENGTH = DigestLength;
     using Digest = std::array<u8, DIGEST_LENGTH>;
 
-    static auto get_digest_of(const u8* data, size_t len) -> Digest
+    template<typename Container>
+    static Digest get_digest_of(const Container& seed, const u8* data, size_t len)
     {
-      GenericHash hash;
+      GenericHMAC hash(seed);
       hash.update_data(data, len);
       hash.finalize();
       return hash.get_digest();
     }
 
-    template<typename... Ts>
-    static auto get_digest_of(Ts&&... pack) -> std::enable_if_t<!(std::is_integral_v<std::decay_t<Ts>> || ...), Digest>
+    template<typename Container, typename... Ts>
+    static auto get_digest_of(const Container& seed, Ts&&... pack) -> std::enable_if_t<!(std::is_integral_v<std::decay_t<Ts>> || ...), Digest>
     {
-      GenericHash hash;
+      GenericHMAC hash(seed);
       (hash.update_data(std::forward<Ts>(pack)), ...);
       hash.finalize();
       return hash.get_digest();
     }
 
-    GenericHash()
+    GenericHMAC(const u8* seed, size_t len)
+      : context(GenericHashImpl::create_context())
+      , key(EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, nullptr, seed, (int)len))
+    {
+      i32 result = EVP_DigestSignInit(context, nullptr, HashCreator(), nullptr, key);
+      ASSERT(result == 1);
+    }
+
+    template<typename Container>
+    explicit GenericHMAC(const Container& container)
+      : GenericHMAC(std::data(container), std::size(container))
+    {
+    }
+
+    GenericHMAC(const GenericHMAC& right)
       : context(GenericHashImpl::create_context())
     {
-      i32 result = EVP_DigestInit_ex(context, HashCreator(), nullptr);
-      DEBUG_ASSERT(result == 1);
+      *this = right;
     }
 
-    GenericHash(const GenericHash& other)
-      : context(GenericHashImpl::create_context())
+    GenericHMAC(GenericHMAC&& right) noexcept
     {
-      *this = other;
+      *this = std::move(right);
     }
 
-    GenericHash(GenericHash&& other) noexcept
-    {
-      *this = std::move(other);
-    }
-
-    ~GenericHash()
+    ~GenericHMAC()
     {
       if (context) {
         GenericHashImpl::destroy_context(context);
         context = nullptr;
       }
+
+      if (key) {
+        EVP_PKEY_free(key);
+        key = nullptr;
+      }
     }
 
-    GenericHash& operator=(const GenericHash& other)
+    GenericHMAC& operator=(const GenericHMAC& other)
     {
       if (this == &other) {
         return *this;
       }
 
       i32 result = EVP_MD_CTX_copy_ex(context, other.context);
-      DEBUG_ASSERT(result == 1);
+      ASSERT(result == 1);
+      key = other.key;      // EVP_PKEY uses reference counting internally, just copy the pointer
+      EVP_PKEY_up_ref(key); // Bump reference count for PKEY, as every instance of this class holds two references to PKEY and destructor decrements it twice
       digest = other.digest;
 
       return *this;
     }
 
-    GenericHash& operator=(GenericHash&& other) noexcept
+    GenericHMAC& operator=(GenericHMAC&& other) noexcept
     {
       if (this == &other) {
         return *this;
       }
 
       context = std::exchange(other.context, GenericHashImpl::create_context());
+      key = std::exchange(other.key, EVP_PKEY_new());
       digest = std::exchange(other.digest, Digest{});
 
       return *this;
@@ -101,7 +97,7 @@ namespace loki {
 
     void update_data(const u8* data, size_t length)
     {
-      i32 result = EVP_DigestUpdate(context, data, length);
+      i32 result = EVP_DigestSignUpdate(context, data, length);
       DEBUG_ASSERT(result == 1);
     }
 
@@ -128,8 +124,8 @@ namespace loki {
 
     void finalize()
     {
-      u32 length;
-      i32 result = EVP_DigestFinal_ex(context, digest.data(), &length);
+      size_t length = DIGEST_LENGTH;
+      i32 result = EVP_DigestSignFinal(context, digest.data(), &length);
       DEBUG_ASSERT(result == 1);
       DEBUG_ASSERT(length == DIGEST_LENGTH);
     }
@@ -141,14 +137,14 @@ namespace loki {
 
   private:
     EVP_MD_CTX* context{};
+    EVP_PKEY* key{};
     Digest digest{};
   };
 
   namespace crypto {
 
-    using MD5 = GenericHash<EVP_md5, constants::MD5_DIGEST_LENGTH_BYTES>;
-    using SHA1 = GenericHash<EVP_sha1, constants::SHA1_DIGEST_LENGTH_BYTES>;
-    using SHA256 = GenericHash<EVP_sha256, constants::SHA256_DIGEST_LENGTH_BYTES>;
+    using HMAC_SHA1 = GenericHMAC<EVP_sha1, constants::SHA1_DIGEST_LENGTH_BYTES>;
+    using HMAC_SHA256 = GenericHMAC<EVP_sha256, constants::SHA256_DIGEST_LENGTH_BYTES>;
 
   } // namespace crypto
 
