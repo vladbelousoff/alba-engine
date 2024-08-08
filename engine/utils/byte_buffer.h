@@ -59,6 +59,26 @@ namespace loki {
       r_pos += n;
     }
 
+    void skip(std::size_t n)
+    {
+      r_pos += n;
+    }
+
+    bool can_read() const
+    {
+      return r_pos != buffer.size();
+    }
+
+    size_t get_r_pos() const
+    {
+      return r_pos;
+    }
+
+    void set_r_pos(size_t pos)
+    {
+      r_pos = pos;
+    }
+
     void send(sockpp::tcp_socket& conn) const;
     ssize_t recv(sockpp::tcp_socket& conn);
 

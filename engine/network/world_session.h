@@ -34,9 +34,11 @@ namespace loki {
 
   private:
     void handle_connection();
+    void read_incoming_packets();
     void read_next_packet();
     void process_command(u16 command);
     void handle_auth_challenge();
+    void handle_auth_response();
 
   private:
     u8 realm_id;

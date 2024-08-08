@@ -39,34 +39,46 @@ loki::WorldSession::handle_connection()
 
   while (running) {
     buffer.reset();
-    read_next_packet();
+    read_incoming_packets();
   }
 
   socket.shutdown();
 }
 
 void
-loki::WorldSession::read_next_packet()
+loki::WorldSession::read_incoming_packets()
 {
-  buffer.reset();
-  ssize_t n = buffer.recv(socket);
-  if (n <= 0) {
+  ssize_t packet_size = buffer.recv(socket);
+  if (packet_size <= 0) {
     return;
   }
 
-  u16 command;
   if (encrypted) {
-    // ServerPacketHeader header;
-    std::array<u8, 4> header{};
-    buffer.load_buffer(header);
-    auth_crypt.decrypt_recv(header.data(), 4 /* normal size packet, there's also 5-sized packets, but it's not our case so far */);
-    command = *reinterpret_cast<u16*>(&header[2]);
+    while (buffer.can_read()) {
+      read_next_packet();
+    }
   } else {
-    buffer.read<u16>(); // header, unused data
-    command = buffer.read<u16>();
+    buffer.read<u16>(); // header, unused data (probably size?)
+    u16 command = buffer.read<u16>();
+    process_command(command);
   }
+}
+
+void
+loki::WorldSession::read_next_packet()
+{
+  auto cur_pos = buffer.get_r_pos();
+  std::array<u8, 4> header{};
+
+  buffer.load_buffer(header);
+  auth_crypt.decrypt_recv(header.data(), 4 /* small size packet, there's also 5-size packets, but it's not our case so far */);
+
+  auto size = htons(*reinterpret_cast<u16*>(&header[0]));
+  u16 command = *reinterpret_cast<u16*>(&header[2]);
+  spdlog::info("Packet size: {}", size);
 
   process_command(command);
+  buffer.set_r_pos(cur_pos + size + 2);
 }
 
 void
@@ -76,8 +88,11 @@ loki::WorldSession::process_command(loki::u16 command)
     case SMSG_AUTH_CHALLENGE:
       handle_auth_challenge();
       break;
+    case SMSG_AUTH_RESPONSE:
+      handle_auth_response();
+      break;
     default:
-      spdlog::info("Unkown command: {}", command);
+      spdlog::info("Unkown command: {:#x}", command);
       break;
   }
 }
@@ -85,6 +100,8 @@ loki::WorldSession::process_command(loki::u16 command)
 void
 loki::WorldSession::handle_auth_challenge()
 {
+  spdlog::info("Receiving SMSG_AUTH_CHALLENGE");
+
   auto one = buffer.read<u32>();
   DEBUG_ASSERT(one == 0x1);
 
@@ -125,5 +142,17 @@ loki::WorldSession::handle_auth_challenge()
   buffer.save_buffer(client_header);
   buffer.save_buffer(auth_info);
   buffer.send(socket);
+
+  spdlog::info("Sending CMSG_AUTH_SESSION");
+
   encrypted = true;
+}
+
+void
+loki::WorldSession::handle_auth_response()
+{
+  spdlog::info("Receiving SMSG_AUTH_RESPONSE");
+
+  u8 status = buffer.read<u8>();
+  ASSERT(status == 12, "You're not the first in the queue"); // AUTH_OK code
 }
