@@ -90,9 +90,15 @@ loki::AuthSession::~AuthSession()
 }
 
 void
-loki::AuthSession::shutdown()
+loki::AuthSession::stop()
 {
   running = false;
+}
+
+void
+loki::AuthSession::shutdown()
+{
+  stop();
   thread.join();
 }
 
@@ -269,6 +275,8 @@ loki::AuthSession::get_session_key() const -> std::optional<SessionKey>
 auto
 loki::AuthSession::connect_to_realm(loki::u8 realm_id) -> std::shared_ptr<WorldSession>
 {
+  stop();
+
   for (const auto& realm : get_realms()) {
     if (realm.realm_id == realm_id) {
       auto colon_pos = realm.server_socket.find(':');

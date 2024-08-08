@@ -47,6 +47,7 @@ namespace loki {
   public:
     void login(std::string_view username, std::string_view password);
     auto connect_to_realm(u8 realm_id) -> std::shared_ptr<WorldSession>;
+    void stop();
     void shutdown();
     auto get_realms() const -> std::vector<PacketAuthRealm>;
     auto get_username() const -> const std::string&;
